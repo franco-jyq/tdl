@@ -41,7 +41,7 @@ pub fn parser(cmd: String) -> Result<MessageCommand, String> {
     if cmd.len() == 2 {
         return Err(String::from("no se escribio ningun comando"));
     }
-    let last_two: Vec<char> = cmd.chars().rev().take(2).collect();
+    let _last_two: Vec<char> = cmd.chars().rev().take(2).collect();
 
     let nuevo_comando = limpiar_final(cmd);
     let comando_filtrado = nuevo_comando.trim();

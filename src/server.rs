@@ -1,26 +1,26 @@
-use std::{net::{TcpListener, TcpStream}, sync::{Arc, RwLock}, collections::HashMap, io::{BufReader, BufRead}, thread};
+use std::{net::{TcpListener, TcpStream},io::{BufReader, BufRead}, thread};
 static PORT: &str = "127.0.0.1:8095";
 use gh22::parser::*;
 
 
 fn main() {
-    manage_server().unwrap();
+    start_server().unwrap();
 }
 
 
-fn manage_server() -> Result<(), String>{
-
-        match TcpListener::bind(PORT) {
-            Err(_) => return Err(String::from("Error con el bind")),
-            Ok(listener) => obtain_connections(listener)?,
-        }
-        Ok(())
-
+fn start_server() -> Result<(), String>{
+    // Creo que estaria bien dejar elegir al puerto para configurar el server
+    // Reservemos el pattern matching para cuando hay mas de 2, asi mostramos varias formas
+    if let Ok(listener) = TcpListener::bind(PORT) {        
+        obtain_connections(listener)?
+    }
+    Err(String::from("Error inicializando servidor"))
 }
+
 
 fn obtain_connections(listener: TcpListener) -> Result<(), String> {
     //Obtenemos las conexiones establecidas
-    launch_server_main_thread()?;
+    //launch_server_main_thread()?;
     launch_client_handler_threads(listener)?;
     Ok(())
     // El servidor esta a la espera de que un cliente se conecte, entonces primero hay que leer
@@ -31,20 +31,16 @@ fn obtain_connections(listener: TcpListener) -> Result<(), String> {
 fn launch_client_handler_threads(
     listener: TcpListener,
 ) -> Result<(), String> {
-    for cliente in listener.incoming() {
-
-        let _join_handle: thread::JoinHandle<_> = thread::spawn(move || {
-            match cliente {
-                // mover el match para arriba de todo
-                Err(_) => return Err(String::from("Error con el cliente")),
-                Ok(cliente_tcp) => handle_client(cliente_tcp)?,
-            };
-            Ok(())
-        });
+    for client in listener.incoming().flatten() {
+        let _join_handle = thread::spawn(move || {
+            handle_client(client).ok();             
+        });      
+        // Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
     }
-    Ok(())
+    Ok(()) 
 }
 
+/* Esta función honestamente no se para que esta
 fn launch_server_main_thread(
 
 ) -> Result<(), String> {
@@ -55,7 +51,7 @@ fn launch_server_main_thread(
     });
 
     Ok(())
-}
+} */
 
 fn handle_client(
     cliente: TcpStream
