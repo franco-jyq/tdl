@@ -1,6 +1,8 @@
-use std::{net::{TcpListener, TcpStream},io::{BufReader, BufRead}, thread};
+use std::{net::{TcpListener, TcpStream}, io::Read};
+use gh22::threadpool::ThreadPool;
+use std::str;
 static PORT: &str = "127.0.0.1:8095";
-use gh22::parser::*;
+static THREAD_NUMBER: usize = 10;
 
 
 fn main() {
@@ -10,80 +12,33 @@ fn main() {
 
 fn start_server() -> Result<(), String>{
     // Creo que estaria bien dejar elegir al puerto para configurar el server
-    // Reservemos el pattern matching para cuando hay mas de 2, asi mostramos varias formas
     if let Ok(listener) = TcpListener::bind(PORT) {        
-        obtain_connections(listener)?
+        obtain_connections(listener)
     }
     Err(String::from("Error inicializando servidor"))
 }
 
 
-fn obtain_connections(listener: TcpListener) -> Result<(), String> {
-    //Obtenemos las conexiones establecidas
-    //launch_server_main_thread()?;
-    launch_client_handler_threads(listener)?;
-    Ok(())
-    // El servidor esta a la espera de que un cliente se conecte, entonces primero hay que leer
-}
-
-
-
-fn launch_client_handler_threads(
-    listener: TcpListener,
-) -> Result<(), String> {
+fn obtain_connections(listener: TcpListener) {
+    let pool = ThreadPool::new(THREAD_NUMBER);
     for client in listener.incoming().flatten() {
-        let _join_handle = thread::spawn(move || {
-            handle_client(client).ok();             
-        });      
+        println!("Recibi conexión");
+        pool.execute(|| { 
+            handle_client(client);
+        });    
         // Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
     }
-    Ok(()) 
 }
 
-/* Esta función honestamente no se para que esta
-fn launch_server_main_thread(
-
-) -> Result<(), String> {
-   
-    thread::spawn(move || {
-        println!("main server thred");
-
-    });
-
-    Ok(())
-} */
-
-fn handle_client(
-    cliente: TcpStream
-) -> Result<(), String> {
-    
-    let reader = BufReader::new(cliente);
-
-    // CASO DE QUE CLIENTE NO ESTE REGISTRADO
-    for line in reader.lines() {
-        match line {
-            Err(_) => return Err(String::from("Error con el line del cliente")),
-            Ok(linea_no_parseada) => match parser(linea_no_parseada.to_string()) {
-                Err(error) => println!("error: {}", error),
-                Ok(message) => match match_message(message) {
-                    Err(error) => println!("error: {}", error),
-                    Ok(_) => println!("F"),
-                },
-            },
+fn handle_client(client: TcpStream){
+    let mut client_m = client.try_clone().unwrap();
+    let mut buffer = [0;1024];
+    while let Ok(size) = client_m.read(&mut buffer) {
+        if size == 0 {
+            break;
         }
-    }
-    Ok(())
+        let request = str::from_utf8(&buffer).unwrap();
+        println!("Recibi {}" ,request);
+    }      
 }
 
-
-
-fn match_message(
-    message: MessageCommand
-) -> Result<(), String> {
-    // println!("EN matchear mensaje llega :{:?}",data_user);
-    match message.cmd {
-        Message::Vote(vote_info) => println!("{:?}", vote_info),
-        Message::Pay(pay_info) => println!("{:?}", pay_info),
-    }
-    Ok(())
-}
