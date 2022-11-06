@@ -62,4 +62,58 @@ impl Register {
         ]
         .concat()
     }
+
+    // En este si veo más lógica en un chequeo de error
+    pub fn from_bytes(bytes: Vec<u8>) -> Register {
+        let mut i = 0; // Contador
+
+        let username_size = bytes[1] as usize;
+        i += username_size + 2;
+        let username = String::from_utf8(bytes[2..i].to_vec()).unwrap();
+
+        let password_size = bytes[i] as usize;
+        i += 1 + password_size;
+        let password = String::from_utf8(bytes[username_size + 3..i].to_vec()).unwrap();
+
+        let email_size = bytes[i] as usize;
+        i += 1 + email_size;
+        let email =
+            String::from_utf8(bytes[password_size + username_size + 4..i].to_vec()).unwrap();
+
+        Register::new(username, password, email).unwrap() // Chequeo?
+    }
+}
+
+#[cfg(test)]
+
+mod register_tests {
+
+    use super::Register;
+
+    #[test]
+    fn register_to_bytes_test() {
+        let test_packet = Register::new(
+            "user".to_string(),
+            "pass".to_string(),
+            "user@pass".to_string(),
+        )
+        .unwrap();
+        let expected = vec![
+            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
+            115, 115,
+        ];
+        assert_eq!(test_packet.to_bytes(), expected);
+    }
+
+    #[test]
+    fn register_from_bytes_test() {
+        let bytes = vec![
+            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
+            115, 115,
+        ];
+        let pkt = Register::from_bytes(bytes);
+        assert_eq!(pkt.username, "user".to_string());
+        assert_eq!(pkt.password, "pass".to_string());
+        assert_eq!(pkt.email, "user@pass".to_string())
+    }
 }

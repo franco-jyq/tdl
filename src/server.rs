@@ -1,3 +1,4 @@
+use gh22::connection::Connection;
 use gh22::threadpool::ThreadPool;
 use std::net::{TcpListener, TcpStream};
 use std::str;
@@ -22,23 +23,14 @@ fn obtain_connections(listener: TcpListener) {
     for client in listener.incoming().flatten() {
         println!("Recibi conexión");
         pool.execute(|| {
-            handle_client(client);
+            spawn_connection(client);
         });
         // Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
     }
 }
 
-fn handle_client(client: TcpStream) {
-    let mut client_m = client.try_clone().unwrap();
-    let mut buffer = [0; 1024];
-    // while let Ok(size) = client_m.read(&mut buffer) {
-    //     if size == 0 {
-    //         break;
-    //     }
-    //     let first_byte = buffer.0;
-    //     // match first_byte {
-    //     //     REGISTER =>   , // Handler_registrer()
-    //     //     LOGIN => ,
-    //     // }
-    // }
+fn spawn_connection(client: TcpStream) {
+    let client_m = client.try_clone().unwrap();
+    let mut connection = Connection::new(client_m);
+    connection.start();
 }
