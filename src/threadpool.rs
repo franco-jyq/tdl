@@ -1,11 +1,10 @@
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
-use std::sync::mpsc::{Sender, channel, Receiver};
-use std::{thread};
+use std::thread;
 
-
-pub struct ThreadPool{
+pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: Option<Sender<Job>>
+    sender: Option<Sender<Job>>,
 }
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
@@ -14,26 +13,27 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
         // Chequear que threads > 0
-        let (sender, receiver) = channel();        
+        let (sender, receiver) = channel();
         let mut workers = Vec::with_capacity(size);
 
         let receiver = Arc::new(Mutex::new(receiver));
-        for id in 0..size{
+        for id in 0..size {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
-        ThreadPool {workers, sender: Some(sender)}
+        ThreadPool {
+            workers,
+            sender: Some(sender),
+        }
     }
 
-    pub fn execute<F>(&self, f: F) 
-    where 
-        F: FnOnce(), // Takes ownership of values in its enviroment (Explicar estos traits)
+    pub fn execute<F>(&self, f: F)
+    where
+        F: FnOnce(),       // Takes ownership of values in its enviroment (Explicar estos traits)
         F: Send + 'static, // Transfer closure from one thread to another
     {
         let job = Box::new(f);
         self.sender.as_ref().unwrap().send(job).unwrap();
-
     }
-    
 }
 
 impl Drop for ThreadPool {
@@ -52,11 +52,11 @@ impl Drop for ThreadPool {
 
 struct Worker {
     id: usize,
-    thread: Option<thread::JoinHandle<()>>
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
-    fn new(id: usize,receiver: Arc<Mutex<Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Arc<Mutex<Receiver<Job>>>) -> Worker {
         let thread = thread::spawn(move || loop {
             match receiver.lock().unwrap().recv() {
                 Ok(job) => {
@@ -71,6 +71,9 @@ impl Worker {
             }
         });
 
-        Worker { id, thread: Some(thread) }
+        Worker {
+            id,
+            thread: Some(thread),
+        }
     }
 }
