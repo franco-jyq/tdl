@@ -44,7 +44,12 @@ impl Register {
     }
 
     pub fn to_bytes(&mut self) -> Vec<u8> {
-        let packet_type_bytes = self.packet_type as u8; //aca hay que crear una fc en el objeto para que se pase a u8
+
+        let packet_type_bytes:u8 = match self.packet_type {
+            PacketType::REGISTER => 0,
+            PacketType::LOGIN => 1,
+            _ => 10,
+        }; //aca hay que crear una fc en el objeto para que se pase a u8
         let username_size_bytes = self.username_size.to_be_bytes().to_vec();
         let username_bytes = self.username.as_bytes().to_vec();
         let password_size_bytes = self.password_size.to_be_bytes().to_vec();
