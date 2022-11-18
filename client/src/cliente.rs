@@ -1,5 +1,8 @@
+
 use std::io;
 use std::{io::Write, net::TcpStream};
+
+use common::register::Register;
 
 pub struct Client {
         stream: TcpStream
@@ -15,19 +18,16 @@ impl Client {
     }
 
     pub fn escribir_mensaje(&mut self) {
-        let mut command: String = String::new();
-        io::stdin()
-            .read_line(&mut command)
-            .expect("Failed to read line");
-        command.remove(command.len() - 1);
-        command.push('\r');
-        command.push('\n');
-        let mensaje = command.clone();
-        match self.stream.write(mensaje.as_bytes()) {
-            Err(_) => println!("Fallo conexion con servidor"),
-            Ok(_) => {
-                if self.stream.flush().is_err() {
-                    println!("Error con flush")
+        //let mut command: String = String::new();
+        
+        if let Ok(mut register_pak) = Register::new("franco".to_string(),"123".to_string(),"5decopas@gmail.com".to_string()){
+
+            match self.stream.write(register_pak.to_bytes().as_slice()) {
+                Err(_) => println!("Fallo conexion con servidor"),
+                Ok(_) => {
+                    if self.stream.flush().is_err() {
+                        println!("Error con flush")
+                    }
                 }
             }
         }

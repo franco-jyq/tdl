@@ -7,11 +7,11 @@ static MAX_EMAIL_SIZE: u8 = 255;
 pub struct Register {
     packet_type: PacketType,
     username_size: u8,
-    username: String,
+    pub username: String,
     password_size: u8,
-    password: String,
+    pub password: String,
     email_size: u8,
-    email: String,
+    pub email: String,
 }
 
 impl Register {
@@ -66,6 +66,10 @@ impl Register {
             email_bytes,
         ]
         .concat()
+        
+
+
+
     }
 
     // En este si veo más lógica en un chequeo de error
@@ -97,7 +101,7 @@ mod register_tests {
 
     #[test]
     fn register_to_bytes_test() {
-        let test_packet = Register::new(
+        let mut test_packet = Register::new(
             "user".to_string(),
             "pass".to_string(),
             "user@pass".to_string(),
