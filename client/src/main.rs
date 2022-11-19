@@ -52,10 +52,10 @@ fn pause() -> Result<String,String>{
 }
 
 fn listar_msg(){
-    println!("Registrarse nombre apellido mail");
-    println!("Consultar Nominados");
-    println!("Consultar Votos");
+    println!("Inicial-Sesion nombre-usuario contraseña");
+    println!("Registrarse nombre-usuario contraseña mail");
+    println!("Consultar-Nominados");
+    println!("Consultar-Votos");
     println!("Votar nominado");
-    println!("Consultar Votos");
     println!("Salir");
 }
