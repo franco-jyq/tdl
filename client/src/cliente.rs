@@ -1,10 +1,12 @@
-
-use std::{io::Write, net::TcpStream};
-
+use std::{io::{Write}, net::TcpStream, thread,time::Duration, sync::mpsc::{Sender,Receiver, self}};
 use common::register::Register;
 
+
+const PACKET_SIZE:usize = 10;
+const TIMEOUT_NANO:u32 = 10000000;
 pub struct Client {
-        stream: TcpStream
+        stream: TcpStream,
+        tx: Sender<String>
 }
 
 impl Client {
@@ -13,8 +15,18 @@ impl Client {
         
         if let Ok(stream) = TcpStream::connect(address) {
             println!("Connectado al servidor!");
+
+            let (tx, rx): (Sender<String>,Receiver<String>) = mpsc::channel();
+
+            stream.set_read_timeout(Some(Duration::new(0, TIMEOUT_NANO))).unwrap();
+            let stream_cpy = stream.try_clone().unwrap();
+            thread::spawn(|| {
+                escuchar_server(stream_cpy,rx)
+            });
+
             return Ok(Client {
-                stream : stream
+                stream : stream,
+                tx: tx
             })
         }else {
             println!("No se pudo conectar...");
@@ -32,6 +44,7 @@ impl Client {
             "Votar" => (),
             "Consultar-Votos" => (),
             "Consultar-Nominados" => (),
+            "Salir" => self.salir(),
             _ => return,
         }
     }
@@ -59,6 +72,22 @@ impl Client {
             }
         }
     }
+
+    fn salir(&mut self){
+        self.tx.send("Salir".to_string()).unwrap();
+    }
+
 }
 
+fn escuchar_server(_stream:TcpStream, rx:Receiver<String>){
+    loop{
+        //let mut buf = [0;PACKET_SIZE];
 
+        //let _leido_server = stream.read(&mut buf).unwrap();
+
+        if  let Ok(leido_cliente) = rx.recv_timeout(Duration::new(0, TIMEOUT_NANO)){
+            println!("{leido_cliente}"); //si no se joinea nunca se va a ver
+            break; 
+        }
+    }
+}

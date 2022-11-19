@@ -25,6 +25,7 @@ fn main() {
                     listar_msg();
                     continue;
                 }else if vec_msg.get(0).unwrap() == &"Salir"{
+                    cliente.escribir_mensaje(vec_msg);
                     break;
                 }
 
