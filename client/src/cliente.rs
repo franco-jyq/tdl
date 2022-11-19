@@ -9,14 +9,20 @@ pub struct Client {
 
 impl Client {
     
-    pub fn new(stream: TcpStream) -> Self {
-
-        Client {
-            stream
+    pub fn new(address:String) -> Result<Self, ()> {
+        
+        if let Ok(stream) = TcpStream::connect(address) {
+            println!("Connectado al servidor!");
+            return Ok(Client {
+                stream : stream
+            })
+        }else {
+            println!("No se pudo conectar...");
+            return Err(())
         }
     }
 
-    pub fn escribir_mensaje(&mut self) {
+    pub fn escribir_mensaje(&mut self,vec_msg:Vec<&str>) {
         //let mut command: String = String::new();
         
         if let Ok(mut register_pak) = Register::new("franco".to_string(),"123".to_string(),"5decopas@gmail.com".to_string()){
