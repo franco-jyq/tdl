@@ -5,14 +5,14 @@ use crate::{register::Register,packet_type::PacketType, data_base::DataBase};
 // Almacenar datos de la conexión
 pub struct Connection {
     stream: TcpStream,
-    logged: bool,
+    //logged: bool,
 }
 
 impl Connection {
     pub fn new(stream: TcpStream) -> Connection {
         Connection {
             stream,
-            logged: false,
+            //logged: false,
         }
     }
 

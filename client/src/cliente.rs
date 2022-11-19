@@ -1,5 +1,4 @@
 
-use std::io;
 use std::{io::Write, net::TcpStream};
 
 use common::register::Register;

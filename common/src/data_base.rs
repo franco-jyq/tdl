@@ -1,9 +1,9 @@
 use std::{io::{BufReader, BufRead}, collections::HashMap, fs::File, sync::RwLock};
 
-use crate::user::{User, self};
+use crate::user::{User};
 
 
-static DATA_FILE_PATH: &str = "./src/data_file";
+
 
 
 pub struct DataBase {

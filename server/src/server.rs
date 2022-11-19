@@ -24,7 +24,7 @@ impl Server {
     // . ./src/data_file
     pub fn start_server(&mut self) -> io::Result<()>{
         
-        if let Ok(mut data_base) = DataBase::new("./src/data_file"){
+        if let Ok(data_base) = DataBase::new("./src/data_file"){
             println!("sdasd");
             let data_base_arc = Arc::new(data_base);
             match TcpListener::bind(PORT) {
@@ -32,7 +32,7 @@ impl Server {
                 Err(e) => return Err(e),
             };
 
-            self.obtain_connections(data_base_arc);
+            self.obtain_connections(data_base_arc)?; // Pensar resultado
         };
 
         Ok(())
