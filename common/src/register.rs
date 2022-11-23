@@ -7,11 +7,11 @@ static MAX_EMAIL_SIZE: u8 = 255;
 pub struct Register {
     packet_type: PacketType,
     username_size: u8,
-    username: String,
+    pub username: String,
     password_size: u8,
-    password: String,
+    pub password: String,
     email_size: u8,
-    email: String,
+    pub email: String,
 }
 
 impl Register {
@@ -43,13 +43,8 @@ impl Register {
         })
     }
 
-    pub fn to_bytes(&mut self) -> Vec<u8> {
-
-        let packet_type_bytes:u8 = match self.packet_type {
-            PacketType::REGISTER => 0,
-            PacketType::LOGIN => 1,
-            _ => 10,
-        }; //aca hay que crear una fc en el objeto para que se pase a u8
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
         let username_size_bytes = self.username_size.to_be_bytes().to_vec();
         let username_bytes = self.username.as_bytes().to_vec();
         let password_size_bytes = self.password_size.to_be_bytes().to_vec();
@@ -57,7 +52,7 @@ impl Register {
         let email_size_bytes = self.email_size.to_be_bytes().to_vec();
         let email_bytes = self.email.as_bytes().to_vec();
         [
-            packet_type_bytes.to_be_bytes().to_vec(),
+            packet_type_bytes,
             username_size_bytes,
             username_bytes,
             password_size_bytes,
