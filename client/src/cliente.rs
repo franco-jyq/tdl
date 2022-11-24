@@ -1,5 +1,6 @@
 use std::{io::{Write}, net::TcpStream, sync::mpsc::{Sender,Receiver}};
 use common::register::Register;
+use common::vote::Vote;
 
 pub struct Client {
         stream: TcpStream,
@@ -47,6 +48,29 @@ impl Client {
         if let Ok(mut register_pak) = Register::new(username.to_string(),password.to_string(),email.to_string()){
 
             match self.stream.write(register_pak.to_bytes().as_slice()) {
+                Err(_) => println!("Fallo conexion con servidor"),
+                Ok(_) => {
+                    if self.stream.flush().is_err() {
+                        println!("Error con flush")
+                    }
+                }
+            }
+        }
+    }
+
+    fn votar(&mut self, mut args:Vec<&str>){
+
+        if !(args.len() == 2){
+            println!("Para votar debe mandar un nombre de nominado y la cantidad de votos");
+            return;
+        }
+
+        let nominado = args.remove(0);
+        let cantidad_votos = args.remove(0);
+
+        if let Ok(mut vote_pak) = Vote::new(nominado.to_string(),cantidad_votos.as_ptr() as u8){
+
+            match self.stream.write(vote_pak.to_bytes().as_slice()) {
                 Err(_) => println!("Fallo conexion con servidor"),
                 Ok(_) => {
                     if self.stream.flush().is_err() {

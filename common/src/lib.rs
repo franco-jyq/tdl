@@ -4,3 +4,4 @@ pub mod packet_type;
 pub mod payment;
 pub mod register;
 pub mod user;
+pub mod vote;
