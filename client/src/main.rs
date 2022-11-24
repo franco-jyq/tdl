@@ -78,6 +78,8 @@ fn inicializar_cliente(stream:TcpStream){
             }
 
             cliente.escribir_mensaje(vec_msg);
+            cliente.escuchar_listener();
+
 
         }else{
             return
