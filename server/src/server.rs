@@ -1,4 +1,4 @@
-use common::ballot_box::{self, BallotBox};
+use common::ballot_box::{BallotBox};
 use common::connection::Connection;
 use common::data_base::DataBase;
 use common::vote::Vote;

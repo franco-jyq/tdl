@@ -5,6 +5,9 @@ pub enum PacketType {
     PAYMENT,
     DEFAULT,
     VOTE,
+    ERROR,
+    INFO,
+    REQUEST
 }
 
 impl PacketType {
@@ -14,6 +17,9 @@ impl PacketType {
             1 => PacketType::LOGIN,
             2 => PacketType::PAYMENT,
             3 => PacketType::VOTE,
+            4 => PacketType::ERROR,
+            5 => PacketType::INFO,
+            6 => PacketType::REQUEST,
             _ => PacketType::DEFAULT,
         }
     }
@@ -24,6 +30,9 @@ impl PacketType {
             PacketType::LOGIN => 1_u8,
             PacketType::PAYMENT => 2_u8,
             PacketType::VOTE => 3_u8,
+            PacketType::ERROR => 4_u8,
+            PacketType::INFO => 5_u8,
+            PacketType::REQUEST => 6_u8,
             _ => 10_u8,
         }
     }

@@ -64,12 +64,22 @@ impl DataBase {
 
         Ok(updated_balance)
     }
+
+    pub fn can_vote (&self,username: &str,amount: u32) -> Result<u32,String> {
+        if let Ok(clients) = &mut self.clients.write() {
+            let user = clients.get_mut(username).unwrap();
+            if user.balance > amount {
+                return Ok(user.balance);
+            } else {
+                return Err(format!("INSUFFICIENT FUNDS: {}",user.balance));
+            }               
+        }
+        
+        Err(String::from("SERVER FATAL ERROR"))
+    }
+
 }
 
-/// Funcion que actualiza el archivo con el nuevo usuario
-// fn update_data_base(&self){
-
-// }
 
 fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
     for line in reader.lines() {

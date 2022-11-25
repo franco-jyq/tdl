@@ -6,3 +6,4 @@ pub mod register;
 pub mod user;
 pub mod vote;
 pub mod ballot_box;
+pub mod infopacket;
