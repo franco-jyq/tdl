@@ -1,4 +1,4 @@
-use common::ballot_box::{BallotBox};
+use common::ballot_box::{BallotBox, self};
 use common::connection::Connection;
 use common::data_base::DataBase;
 use common::vote::Vote;
@@ -34,13 +34,13 @@ impl Server {
                 let mut ballot_box_arc = Arc::new(ballot_box);
 
                 let (tx, rx) = mpsc::channel();
-                launch_main_handler(&mut ballot_box_arc, rx).unwrap();
+                launch_main_handler(&mut ballot_box_arc.clone(), rx).unwrap();
    
                 match TcpListener::bind(PORT) {
                     Ok(listener) => self.listener = Some(listener),    
                     Err(e) => return Err(e),
                 };
-                self.obtain_connections(data_base_arc, tx)?; // Pensar resultado
+                self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc.clone())?; // Pensar resultado
 
             }
         };
@@ -48,16 +48,17 @@ impl Server {
         Ok(())
     }
 
-    fn obtain_connections(&mut self, data_base: Arc<DataBase>, tx: Sender<Vote>) -> io::Result<()>{
+    fn obtain_connections(&mut self, data_base: Arc<DataBase>, tx: Sender<Vote>, ballot_box: &mut Arc<BallotBox>) -> io::Result<()>{
 
         
         let pool = ThreadPool::new(THREAD_NUMBER);
         for client in self.listener.as_ref().unwrap().incoming().flatten() {
             let tx_clone = tx.clone();
+            let mut ballot_clone = ballot_box.clone();
             println!("Recibi conexión");
             let db_clone = data_base.clone();
             pool.execute( move | | {
-                spawn_connection(client, db_clone ,tx_clone);
+                spawn_connection(client, db_clone ,tx_clone, &mut ballot_clone);
             });
             //Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
         }
@@ -66,11 +67,11 @@ impl Server {
     
 }
 
-fn spawn_connection(client: TcpStream, data_base: Arc<DataBase>, tx: Sender<Vote>) {
+fn spawn_connection(client: TcpStream, data_base: Arc<DataBase>, tx: Sender<Vote>, ballot_box: &mut Arc<BallotBox>) {
     
     if let Ok(client_m) = client.try_clone(){
         let mut connection = Connection::new(client_m);
-        connection.start(data_base, tx);
+        connection.start(data_base, tx, ballot_box);
     }
 }
 

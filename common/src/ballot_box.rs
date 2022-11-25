@@ -46,9 +46,21 @@ impl BallotBox {
         Ok(())
     }
 
+    pub fn get_nominees(&self) -> Vec<(String,usize)>{
 
+        let mut nominee_vec = vec![];
+
+        if let Ok(nominees) = self.nominees.read(){
+            let nominees_clone = nominees.clone();
+                for (nominee, vote) in nominees_clone.into_iter() {
+                    nominee_vec.push((nominee,vote))
+                    
+                }
+        }
+        nominee_vec
+
+    }
 }
-
 fn load_nominees(nominees: &mut HashMap<String, usize>, reader: BufReader<File>) {
     for line in reader.lines() {
         

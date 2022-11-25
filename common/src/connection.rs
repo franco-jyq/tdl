@@ -1,6 +1,6 @@
 use std::{io::{Read, Write}, net::TcpStream, sync::{Arc, mpsc::Sender}};
 
-use crate::{data_base::DataBase, packet_type::PacketType, payment::Payment, register::Register, vote::Vote, infopacket::InfoPacket};
+use crate::{data_base::DataBase, packet_type::PacketType, payment::Payment, register::Register, vote::Vote, infopacket::InfoPacket, ballot_box::{self, BallotBox}};
 
 static VOTE_COST: u32 = 100;
 
@@ -18,8 +18,11 @@ impl Connection {
         }
     }
 
-    pub fn start(&mut self, data_base: Arc<DataBase>, tx: Sender<Vote>) {
+    pub fn start(&mut self, data_base: Arc<DataBase>, tx: Sender<Vote>,  ballot_box: &mut Arc<BallotBox>) {
         let mut buffer = [0; 1024];
+        
+        println!("{:?}",ballot_box.get_nominees()); // ACA TENES PARA HACER LA CONSULTA GORDO
+
         while let Ok(size) = self.stream.read(&mut buffer) {
             if size == 0 {
                 break;
