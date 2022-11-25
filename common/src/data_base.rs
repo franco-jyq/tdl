@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fs::File,
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader, Write},
     sync::RwLock,
 };
 
@@ -46,7 +46,7 @@ impl DataBase {
             println!("DataBase:{:?}", clients);
         }
 
-        //update_data_base();
+        update_data_base(&self.clients);
         Ok(())
     }
 
@@ -82,4 +82,35 @@ fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
             println!("Hubo un error con la linea del archivo para la base de datos",);
         }
     }
+}
+
+
+fn update_data_base(clients: & RwLock<HashMap<String, User>>){
+
+    if let Ok(mut file) = File::create("./src/data_file") {
+    
+
+        if let Ok(clients) =  clients.read() {
+            
+            let clients_clone = clients.clone();
+            for (_client, user) in clients_clone.into_iter() {
+                let vector: Vec<String> = vec![
+                                                user.username,
+                                                user.password,
+                                                user.email,
+                                            ];
+                let comma: String = String::from(",");
+                for atribute in vector.iter() {
+                    file.write_all(atribute.as_bytes())
+                        .expect("Unable to write data");
+                    file.write_all(comma.as_bytes()).expect("Unable to write data");
+                }
+                let jump = String::from("\n");
+                file.write_all(jump.as_bytes()).expect("Unable to write data");
+            }
+            
+        }
+        
+    }
+
 }

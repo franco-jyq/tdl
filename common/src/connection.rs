@@ -1,6 +1,6 @@
-use std::{io::Read, net::TcpStream, sync::Arc};
+use std::{io::Read, net::TcpStream, sync::{Arc, mpsc::Sender}};
 
-use crate::{data_base::DataBase, packet_type::PacketType, payment::Payment, register::Register};
+use crate::{data_base::DataBase, packet_type::PacketType, payment::Payment, register::Register, vote::Vote};
 
 // Almacenar datos de la conexión
 pub struct Connection {
@@ -16,7 +16,7 @@ impl Connection {
         }
     }
 
-    pub fn start(&mut self, data_base: Arc<DataBase>) {
+    pub fn start(&mut self, data_base: Arc<DataBase>, tx: Sender<Vote>) {
         let mut buffer = [0; 1024];
         while let Ok(size) = self.stream.read(&mut buffer) {
             if size == 0 {
@@ -33,7 +33,11 @@ impl Connection {
                 PacketType::PAYMENT => {
                     println!("Se recibio un pago");
                     self.handler_payment(Payment::from_bytes(buffer.to_vec()), &data_base)
-                }
+                },
+                PacketType::VOTE => {
+                    println!("Se recibio un pago");
+                    self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
+                },
                 _ => (),
             }
             buffer = [0; 1024];
@@ -53,6 +57,16 @@ impl Connection {
             .update_money(packet.username, packet.amount)
             .unwrap();
         println!("Se recargo correctamente saldo")
+        // Lo mismo aca
+    }
+
+    pub fn handler_vote(&self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) {
+       
+        // eventualmente hay qe validar el voto con la informacion de la data base
+        // x ahora con esto aplico la chaneleta
+        if let Err(_) = tx.send(packet){
+            println!("Vote send to main thread failed")
+        }
         // Lo mismo aca
     }
 }
