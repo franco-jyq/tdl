@@ -21,7 +21,7 @@ impl Vote {
             packet_type: PacketType::VOTE,
             nominado_size,
             nominado,
-            cantidad_votos
+            cantidad_votos,
         })
     }
 

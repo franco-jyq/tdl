@@ -7,7 +7,8 @@ pub enum PacketType {
     VOTE,
     ERROR,
     INFO,
-    REQUEST
+    REQUEST,
+    NOMINEES,
 }
 
 impl PacketType {
@@ -20,6 +21,7 @@ impl PacketType {
             4 => PacketType::ERROR,
             5 => PacketType::INFO,
             6 => PacketType::REQUEST,
+            7 => PacketType::NOMINEES,
             _ => PacketType::DEFAULT,
         }
     }
@@ -33,6 +35,7 @@ impl PacketType {
             PacketType::ERROR => 4_u8,
             PacketType::INFO => 5_u8,
             PacketType::REQUEST => 6_u8,
+            PacketType::NOMINEES => 7_u8,
             _ => 10_u8,
         }
     }
