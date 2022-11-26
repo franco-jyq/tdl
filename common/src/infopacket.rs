@@ -31,6 +31,14 @@ impl InfoPacket {
         let info_msg = String::from_utf8(bytes[2..i].to_vec()).unwrap();
         InfoPacket::new(pkt_type, info_msg)
     }
+
+    pub fn is_err(&mut self) -> bool{
+        self.packet_type.as_utf8() == PacketType::ERROR.as_utf8()
+    }
+
+    pub fn get_msg(&mut self) -> String{
+        self.info_msg.clone()
+    }
 }
 
 #[cfg(test)]
