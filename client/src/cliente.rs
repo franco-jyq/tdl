@@ -1,5 +1,5 @@
 use std::{io::{Write, Read}, net::TcpStream};
-use common::{register::Register, infopacket::InfoPacket};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket};
 use common::vote::Vote;
 
 pub struct Client {
@@ -24,7 +24,7 @@ impl Client {
             "Registrarse" => return self.registrarse(vec_msg),
             "Votar" => return self.votar(vec_msg),
             "Consultar-Votos" => (),
-            "Consultar-Nominados" => (),
+            "Consultar-Nominados" => return self.consultar_nominados(),
             _ => return {
                 println!("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
@@ -87,6 +87,20 @@ impl Client {
         }
     }
 
+    fn consultar_nominados(&mut self) -> Result<bool,String>{
+    
+        let mut info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Nominados".to_string());              
+        match self.stream.write(info_packet.to_bytes().as_slice()) {
+            Err(e) => return Err(e.to_string()),
+            Ok(_) => {
+                if self.stream.flush().is_err() {
+                    return Err("Error con flush".to_string());
+                }
+                    return Ok(true);
+            } 
+        }
+    }
+
     pub fn escuchar_respuesta(&mut self) -> Result<(),String>{
 
         let mut buffer = [0; 1024];
@@ -96,6 +110,8 @@ impl Client {
             if packet.is_err(){
                 return Err(packet.get_msg());
             }
+
+            //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
 
             return Ok(());
         }else{
