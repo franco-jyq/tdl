@@ -2,13 +2,14 @@ use std::{env::args, io, net::TcpStream, time::Duration};
 static CLIENT_ARGS: usize = 3;
 use cliente::Client;
 mod cliente;
+use common::colors::print_error;
 
 const TIMEOUT_NANO:u32 = 10000000;
 
 fn main() {
     let argv = args().collect::<Vec<String>>();
     if argv.len() != CLIENT_ARGS {
-        println!("Cantidad de argumentos inválido");
+        print_error("Cantidad de argumentos inválido");
         let app_name = &argv[0];
         println!("{:?} <host> <puerto>", app_name);
     }
@@ -29,7 +30,7 @@ fn main() {
 fn pause() -> Result<String,String>{
     
     let mut msg = String::new();
-    
+
     println!("Escriba que acción quiere realizar o Ayuda para ver los mensajes disponibles");
     match io::stdin().read_line(&mut msg) {
         Ok(_u) => {
@@ -41,7 +42,7 @@ fn pause() -> Result<String,String>{
 }
 
 fn listar_msg(){
-    println!("Inicial-Sesion nombre-usuario contraseña");
+    println!("Iniciar-Sesion nombre-usuario contraseña");
     println!("Registrarse nombre-usuario contraseña mail");
     println!("Consultar-Nominados");
     println!("Consultar-Votos");

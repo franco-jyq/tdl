@@ -1,6 +1,7 @@
 use std::{io::{Write, Read}, net::TcpStream};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login};
 use common::vote::Vote;
+
 
 pub struct Client {
         stream: TcpStream
@@ -20,16 +21,15 @@ impl Client {
         let value = vec_msg.remove(0);
 
         match value{
-            "Iniciar-Sesion" => (),
+            "Iniciar-Sesion" => self.iniciar_sesion(vec_msg),
             "Registrarse" => return self.registrarse(vec_msg),
             "Votar" => return self.votar(vec_msg),
-            "Consultar-Votos" => (),
+            "Consultar-Votos" => return Ok(false),
             "Consultar-Nominados" => return self.consultar_nominados(),
             _ => return {
                 println!("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
         }
-        Ok(false)
     }
 
     fn registrarse(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
@@ -58,6 +58,34 @@ impl Client {
             }
         }else {
             return Err("Error al crear el paquete de Register".to_string());
+        }
+    }
+
+    fn iniciar_sesion(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
+
+        if !(args.len() == 2){
+            println!("Para iniciar sesion debe mandar un nombre de usuario,contraseña y mail");
+            return Ok(false);
+        }
+
+        let username = args.remove(0);
+        let password = args.remove(0);
+
+        if let Ok(login_packet) = Login::new(username.to_string(),password.to_string()){
+
+            match self.stream.write(login_packet.to_bytes().as_slice()) {
+                Err(e) => {
+                    return Err(e.to_string());
+                },
+                Ok(_) => {
+                    if self.stream.flush().is_err() {
+                        return Err("Error con flush".to_string());
+                    }
+                    return Ok(true);
+                }
+            }
+        }else {
+            return Err("Error al crear el paquete de Login".to_string());
         }
     }
 
@@ -112,7 +140,6 @@ impl Client {
             }
 
             //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
-
             return Ok(());
         }else{
             return Err("Error al leer respuesta de servidor".to_string());
