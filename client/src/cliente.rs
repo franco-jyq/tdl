@@ -1,5 +1,5 @@
 use std::{io::{Write, Read}, net::TcpStream};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error};
 use common::vote::Vote;
 
 
@@ -27,7 +27,7 @@ impl Client {
             "Consultar-Votos" => return Ok(false),
             "Consultar-Nominados" => return self.consultar_nominados(),
             _ => return {
-                println!("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
+                print_error("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
         }
     }
@@ -35,7 +35,7 @@ impl Client {
     fn registrarse(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
 
         if !(args.len() == 3){
-            println!("Para registrarse debe mandar un nombre de usuario,contraseña y mail");
+            print_error("Para registrarse debe mandar un nombre de usuario,contraseña y mail");
             return Ok(false);
         }
 
@@ -64,7 +64,7 @@ impl Client {
     fn iniciar_sesion(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
 
         if !(args.len() == 2){
-            println!("Para iniciar sesion debe mandar un nombre de usuario,contraseña y mail");
+            print_error("Para iniciar sesion debe mandar un nombre de usuario,contraseña y mail");
             return Ok(false);
         }
 
@@ -92,7 +92,7 @@ impl Client {
     fn votar(&mut self, mut args:Vec<&str>) -> Result<bool,String>{
 
         if !(args.len() == 2){
-            println!("Para votar debe mandar un nombre de nominado y la cantidad de votos");
+            print_error("Para votar debe mandar un nombre de nominado y la cantidad de votos");
             return Ok(false);
         }
 
