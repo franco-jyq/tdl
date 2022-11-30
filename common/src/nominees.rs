@@ -18,7 +18,7 @@ impl Nominee {
 pub struct Nominees {
     packet_type: PacketType,
     nominees_size: u32, // Tamaño en bytes del vector de abajo
-    nominees: Vec<Nominee>,
+    pub nominees: Vec<Nominee>,
 }
 
 impl Nominees {

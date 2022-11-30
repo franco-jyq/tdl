@@ -57,7 +57,7 @@ impl Connection {
                     println!("Se recibio un voto");
                     self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
                 }
-                PacketType::INFO => {
+                PacketType::REQUEST => {
                     println!("Se solicitaron los nominados");
                     self.handler_request(ballot_box)
                 }
@@ -108,6 +108,7 @@ impl Connection {
                 VOTE_COST * packet.cantidad_votos as u32,
             ) {
                 self.write_error(&e);
+                println!("No es posible votar");
                 return;
             }
             if tx.send(packet).is_err() {
@@ -125,6 +126,8 @@ impl Connection {
             let nominees = ballot_box.get_nominees();
             let nom_pkt = Nominees::new(nominees).to_bytes();
             self.stream.write(&nom_pkt).unwrap(); // Consultar que hacemos de aca
+            println!("Nominados enviados correctamente");
+            return;
         }
 
         self.write_error("PLEASE LOGIN OR REGISTER");

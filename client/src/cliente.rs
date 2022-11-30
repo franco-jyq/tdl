@@ -1,5 +1,5 @@
 use std::{io::{Write, Read}, net::TcpStream};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error, nominees::Nominees};
 use common::vote::Vote;
 
 
@@ -124,7 +124,7 @@ impl Client {
                 if self.stream.flush().is_err() {
                     return Err("Error con flush".to_string());
                 }
-                    Ok(true)
+                Ok(true)
             } 
         }
     }
@@ -133,14 +133,27 @@ impl Client {
 
         let mut buffer = [0; 1024];
         if let Ok(_size) = self.stream.read(&mut buffer){
-            let mut packet = InfoPacket::from_bytes(buffer.to_vec());
+            let aux = buffer[0];
+            let first_byte = PacketType::from_utf8(aux);
+            match first_byte {
+                PacketType::INFO | PacketType::ERROR => {
+                    let mut packet = InfoPacket::from_bytes(buffer.to_vec());
 
-            if packet.is_err(){
-                return Err(packet.get_msg());
+                    //if packet.is_err(){
+                    //    return Err(packet.get_msg());
+                    //}
+                    println!("{}", packet.get_msg());
+                    //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
+                    Ok(())
+                }
+                _ => {
+                    println!("LLego");
+                    let nominees = Nominees::from_bytes(buffer.to_vec());
+                    println!("Nominados {:?}",nominees.nominees);
+                    Ok(())
+                }
             }
-
-            //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
-            Ok(())
+            
         }else{
             Err("Error al leer respuesta de servidor".to_string())
         }
