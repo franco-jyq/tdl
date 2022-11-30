@@ -47,6 +47,7 @@ fn listar_msg(){
     print_common_text("Consultar-Nominados");
     print_common_text("Consultar-Votos");
     print_common_text("Votar nominado");
+    print_common_text("Cargar-Saldo saldo");
     print_common_text("Salir");
 }
 

@@ -26,6 +26,7 @@ impl Client {
             "Votar" => self.votar(vec_msg),
             "Consultar-Votos" => Ok(false),
             "Consultar-Nominados" => self.consultar_nominados(),
+            "Cargar-Saldo" => self.cargar_saldo(vec_msg),
             _ => {
                 print_error("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
@@ -120,6 +121,29 @@ impl Client {
         let mut info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Nominados".to_string());              
         match self.stream.write(info_packet.to_bytes().as_slice()) {
             Err(e) => Err(e.to_string()),
+            Ok(_) => {
+                if self.stream.flush().is_err() {
+                    return Err("Error con flush".to_string());
+                }
+                Ok(true)
+            } 
+        }
+    }
+
+    fn cargar_saldo(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
+
+        if args.len() != 1 {
+            print_error("Para cargar saldo debe mandar el monto a cargar");
+            return Ok(false);
+        }
+
+        let monto = args.remove(0);
+        let mut info_packet = InfoPacket::new(PacketType::from_utf8(2), monto.to_string());
+
+        match self.stream.write(info_packet.to_bytes().as_slice()) {
+            Err(e) => {
+                Err(e.to_string())
+            },
             Ok(_) => {
                 if self.stream.flush().is_err() {
                     return Err("Error con flush".to_string());
