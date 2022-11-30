@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     ballot_box::BallotBox, data_base::DataBase, infopacket::InfoPacket, nominees::Nominees,
-    packet_type::PacketType, payment::Payment, register::Register, vote::Vote,
+    packet_type::PacketType, payment::Payment, register::Register, vote::Vote, login::Login,
 };
 
 static VOTE_COST: u32 = 100;
@@ -41,6 +41,10 @@ impl Connection {
             let first_byte = PacketType::from_utf8(aux);
             println!("The first byte is {:?}", first_byte);
             match first_byte {
+                PacketType::LOGIN => {
+                    println!("Se recibio un login");
+                    self.handler_login(Login::from_bytes(buffer.to_vec()),&data_base)
+                }
                 PacketType::REGISTER => {
                     println!("Se recibio un register");
                     self.handler_register(Register::from_bytes(buffer.to_vec()), &data_base)
@@ -61,6 +65,18 @@ impl Connection {
             }
             buffer = [0; 1024];
         }
+    }
+
+    pub fn handler_login(&mut self,packet: Login,data_base: &Arc<DataBase>){
+        if let Err(e) =
+            data_base.log_new_user(packet.username.clone(), packet.password)
+        {
+            self.write_error(&e);
+            return;
+        }
+        self.username = Some(packet.username);
+        println!("Se logueo correctamente al cliente");
+        self.write_info("LOGIN ACCEPTED")
     }
 
     pub fn handler_register(&mut self, packet: Register, data_base: &Arc<DataBase>) {

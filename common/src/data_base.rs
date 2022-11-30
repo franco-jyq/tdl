@@ -28,6 +28,21 @@ impl DataBase {
         })
     }
 
+    pub fn log_new_user (&self,username: String,password: String) -> Result<(),String> {
+        if let Ok(clients) = &mut self.clients.read() {
+            if let Some(user) = clients.get(&username) {
+                if user.password == password {
+                    return Ok(());
+                }
+                return Err(String::from("INVALID_PASSWORD"));                      
+            }
+            return Err(String::from("USERNAME_NOT_FOUND"));
+            
+        
+        }
+        Err(String::from("SERVER_FATAL_ERROR"))
+    }
+
     pub fn save_new_user(
         &self,
         username: String,
