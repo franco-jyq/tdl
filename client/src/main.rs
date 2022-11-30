@@ -22,7 +22,6 @@ fn main() {
         inicializar_cliente(stream);
     }else{
         print_error("No se pudo conectar...");
-        return;
     }
 
 }
@@ -35,9 +34,9 @@ fn pause() -> Result<String,String>{
     print_common_text("Escriba que acción quiere realizar o Ayuda para ver los mensajes disponibles");
     match io::stdin().read_line(&mut msg) {
         Ok(_u) => {
-            return Ok(msg);
+            Ok(msg)
         }
-        Err(_error) => return Err(String::from("Error al leer io")),
+        Err(_error) => Err(String::from("Error al leer io"))
     }
 
 }
@@ -61,10 +60,10 @@ fn inicializar_cliente(stream:TcpStream){
             //Parseo en un vector la linea leida
             let vec_msg:Vec<&str> = msg.split_whitespace().collect();
 
-            if vec_msg.get(0).unwrap() == &"Ayuda"{
+            if vec_msg.first().unwrap() == &"Ayuda"{
                 listar_msg();
                 continue;
-            }else if vec_msg.get(0).unwrap() == &"Salir"{
+            }else if vec_msg.first().unwrap() == &"Salir"{
                 break;
             }
 

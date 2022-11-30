@@ -12,7 +12,7 @@ impl Client {
     pub fn new(stream:TcpStream) -> Self {
 
         Client {
-            stream : stream
+            stream
         }
     }
 
@@ -22,11 +22,11 @@ impl Client {
 
         match value{
             "Iniciar-Sesion" => self.iniciar_sesion(vec_msg),
-            "Registrarse" => return self.registrarse(vec_msg),
-            "Votar" => return self.votar(vec_msg),
-            "Consultar-Votos" => return Ok(false),
-            "Consultar-Nominados" => return self.consultar_nominados(),
-            _ => return {
+            "Registrarse" => self.registrarse(vec_msg),
+            "Votar" => self.votar(vec_msg),
+            "Consultar-Votos" => Ok(false),
+            "Consultar-Nominados" => self.consultar_nominados(),
+            _ => {
                 print_error("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
         }
@@ -34,7 +34,7 @@ impl Client {
 
     fn registrarse(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
 
-        if !(args.len() == 3){
+        if args.len() != 3 {
             print_error("Para registrarse debe mandar un nombre de usuario,contraseña y mail");
             return Ok(false);
         }
@@ -47,23 +47,23 @@ impl Client {
 
             match self.stream.write(register_pak.to_bytes().as_slice()) {
                 Err(e) => {
-                    return Err(e.to_string());
+                    Err(e.to_string())
                 },
                 Ok(_) => {
                     if self.stream.flush().is_err() {
                         return Err("Error con flush".to_string());
                     }
-                    return Ok(true);
+                    Ok(true)
                 }
             }
         }else {
-            return Err("Error al crear el paquete de Register".to_string());
+            Err("Error al crear el paquete de Register".to_string())
         }
     }
 
     fn iniciar_sesion(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
 
-        if !(args.len() == 2){
+        if args.len() != 2 {
             print_error("Para iniciar sesion debe mandar un nombre de usuario,contraseña y mail");
             return Ok(false);
         }
@@ -75,23 +75,23 @@ impl Client {
 
             match self.stream.write(login_packet.to_bytes().as_slice()) {
                 Err(e) => {
-                    return Err(e.to_string());
+                    Err(e.to_string())
                 },
                 Ok(_) => {
                     if self.stream.flush().is_err() {
                         return Err("Error con flush".to_string());
                     }
-                    return Ok(true);
+                    Ok(true)
                 }
             }
         }else {
-            return Err("Error al crear el paquete de Login".to_string());
+            Err("Error al crear el paquete de Login".to_string())
         }
     }
 
     fn votar(&mut self, mut args:Vec<&str>) -> Result<bool,String>{
 
-        if !(args.len() == 2){
+        if args.len() != 2 {
             print_error("Para votar debe mandar un nombre de nominado y la cantidad de votos");
             return Ok(false);
         }
@@ -102,16 +102,16 @@ impl Client {
         if let Ok(vote_pak) = Vote::new(nominado.to_string(),cantidad_votos.as_ptr() as u8){
 
             match self.stream.write(vote_pak.to_bytes().as_slice()) {
-                Err(e) => return Err(e.to_string()),
+                Err(e) => Err(e.to_string()),
                 Ok(_) => {
                     if self.stream.flush().is_err() {
                         return Err("Error con flush".to_string());
                     }
-                    return Ok(true);
+                    Ok(true)
                 } 
             }
         }else {
-            return Err("Error al crear el paquete de Register".to_string());
+            Err("Error al crear el paquete de Register".to_string())
         }
     }
 
@@ -119,12 +119,12 @@ impl Client {
     
         let mut info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Nominados".to_string());              
         match self.stream.write(info_packet.to_bytes().as_slice()) {
-            Err(e) => return Err(e.to_string()),
+            Err(e) => Err(e.to_string()),
             Ok(_) => {
                 if self.stream.flush().is_err() {
                     return Err("Error con flush".to_string());
                 }
-                    return Ok(true);
+                    Ok(true)
             } 
         }
     }
@@ -140,9 +140,9 @@ impl Client {
             }
 
             //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
-            return Ok(());
+            Ok(())
         }else{
-            return Err("Error al leer respuesta de servidor".to_string());
+            Err("Error al leer respuesta de servidor".to_string())
         }
     }
 }
