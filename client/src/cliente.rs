@@ -1,5 +1,5 @@
-use std::{io::{Write, Read}, net::TcpStream};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error, nominees::Nominees};
+use std::{io::{Write, Read}, net::TcpStream, str::FromStr};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error, nominees::Nominees, payment::Payment};
 use common::vote::Vote;
 
 
@@ -132,15 +132,17 @@ impl Client {
 
     fn cargar_saldo(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
 
-        if args.len() != 1 {
+        if args.len() != 2 {
             print_error("Para cargar saldo debe mandar el monto a cargar");
             return Ok(false);
         }
-
+        
+        let username = args.remove(0);
         let monto = args.remove(0);
-        let mut info_packet = InfoPacket::new(PacketType::from_utf8(2), monto.to_string());
+        
+        let mut payment = Payment::new(username.to_string(), FromStr::from_str(monto).unwrap());
 
-        match self.stream.write(info_packet.to_bytes().as_slice()) {
+        match self.stream.write(payment.to_bytes().as_slice()) {
             Err(e) => {
                 Err(e.to_string())
             },
