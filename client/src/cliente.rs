@@ -1,15 +1,18 @@
-use std::{io::{Write, Read}, net::TcpStream, str::FromStr};
+use std::{io::{Write, Read},  str::FromStr};
 use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error, nominees::Nominees, payment::Payment};
 use common::vote::Vote;
 
-
-pub struct Client {
-        stream: TcpStream
+pub struct Client<T: Read + Write>  {
+        stream: T
+        
 }
 
-impl Client {
+impl <T> Client <T>
+where
+    T:Read + Write,
+{
     
-    pub fn new(stream:TcpStream) -> Self {
+    pub fn new(stream:T) -> Self {
 
         Client {
             stream
@@ -183,5 +186,58 @@ impl Client {
         }else{
             Err("Error al leer respuesta de servidor".to_string())
         }
+    }
+}
+
+
+#[cfg(test)]
+
+mod cliente_tests {
+
+    use std::io;
+    use super::*;
+    
+    struct MockTcpStream {
+        write_data: Vec<u8>,
+    }
+
+    impl Read for MockTcpStream {
+        /// Lee bytes del stream hasta completar el buffer y devuelve cuantos bytes fueron escritos en el stream
+        fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+            self.write_data.as_slice().read(buf)
+        }
+    }
+
+    impl Write for MockTcpStream {
+        /// Escribe el valor del buffer en el stream y devuelve cuantos bytes fueron escritos
+        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+            self.write_data.write(buf)
+        }
+
+        fn flush(&mut self) -> io::Result<()> {
+            self.write_data.flush()
+        }
+    }
+
+
+/// El mensaje se envia correctamente a travez del stream
+    #[test]
+    fn register_test(){
+
+        let stream = MockTcpStream{write_data: vec![]};
+        let mut client = Client{stream:stream};
+        let bytes: &[u8] = &Register::new("Frodo".to_string(),"aguante_milei".to_string(),"frodoneta@gmail.com".to_string()).unwrap().to_bytes();
+
+        client.escribir_mensaje(vec![ 
+                                                "Registrarse",
+                                                "Frodo",
+                                                "aguante_milei",
+                                                "frodoneta@gmail.com"
+                                        ]).unwrap();
+                    
+        let mut buf = [0; 500];
+        client.stream.read(&mut buf).unwrap();
+        assert_eq!(client.stream.write_data, bytes );
+       
     }
 }
