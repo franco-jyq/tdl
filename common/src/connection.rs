@@ -92,13 +92,19 @@ impl Connection {
     }
 
     pub fn handler_payment(&mut self, packet: Payment, data_base: &Arc<DataBase>) {
-        if let Err(e) = data_base.update_money(packet.username, packet.amount) {
-            self.write_error(&e);
-            return;
+        match  data_base.update_money(packet.username, packet.amount){
+            Err(e) => {
+                self.write_error(&e);
+                return;
+            },
+            Ok(saldo) => {
+                println!("Se recargo correctamente saldo");
+                let saldo_s = saldo.to_string();
+                self.write_info(&saldo_s)
+            }       
         }
 
-        println!("Se recargo correctamente saldo");
-        self.write_info("PAYMENT ACCEPTED")
+        
     }
 
     pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) {
@@ -106,7 +112,7 @@ impl Connection {
             if let Err(e) = data_base.can_vote(
                 self.username.as_deref().unwrap(),
                 VOTE_COST * packet.cantidad_votos as u32,
-            ) {
+            ) { 
                 self.write_error(&e);
                 println!("No es posible votar");
                 return;

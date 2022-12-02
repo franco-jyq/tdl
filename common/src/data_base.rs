@@ -83,6 +83,7 @@ impl DataBase {
     pub fn can_vote(&self, username: &str, amount: u32) -> Result<u32, String> {
         if let Ok(clients) = &mut self.clients.write() {
             let user = clients.get_mut(username).unwrap();
+            println!("{}{}",user.balance,amount);
             if user.balance > amount {
                 return Ok(user.balance);
             } else {

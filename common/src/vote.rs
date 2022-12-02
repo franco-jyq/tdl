@@ -2,6 +2,7 @@ use crate::packet_type::PacketType;
 
 static MAX_NOMINADO_SIZE: u8 = 255;
 
+#[derive(Debug)]
 pub struct Vote {
     packet_type: PacketType,
     nominado_size: u8,
@@ -46,10 +47,45 @@ impl Vote {
         i += nominado_size + 2;
         let nominado = String::from_utf8(bytes[2..i].to_vec()).unwrap();
 
-        let cantidad_votos_size = bytes[i] as usize;
-        i += 1 + cantidad_votos_size;
-        let cantidad_votos = bytes[cantidad_votos_size + 3..i].as_ptr() as u8;
+        
+        let cantidad_votos = bytes[i];
 
         Vote::new(nominado, cantidad_votos).unwrap()
+    }
+}
+
+
+
+#[cfg(test)]
+
+mod vote_tests {
+
+    use super::Vote;
+
+    #[test]
+    fn vote_to_bytes_test() {
+        let test_packet = Vote::new(
+            "user".to_string(),
+            2,
+        )
+        .unwrap();
+        let expected = vec![
+            3, 4, 117, 115, 101, 114, 2
+        ];
+        assert_eq!(test_packet.to_bytes(), expected);
+    }
+
+    #[test]
+    fn vote_from_bytes_test() {
+        let expected_packet = Vote::new(
+            "user".to_string(),
+            2,
+        )
+        .unwrap();
+        let bytes = vec![
+            3, 4, 117, 115, 101, 114, 2
+        ];
+        let test_packet = Vote::from_bytes(bytes);
+        assert_eq!(test_packet.cantidad_votos, expected_packet.cantidad_votos);
     }
 }

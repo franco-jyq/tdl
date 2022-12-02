@@ -101,9 +101,9 @@ where
         }
 
         let nominado = args.remove(0);
-        let cantidad_votos = args.remove(0);
-
-        if let Ok(vote_pak) = Vote::new(nominado.to_string(),cantidad_votos.as_ptr() as u8){
+        let cantidad_votos = u8::from_str(args.remove(0)).unwrap();
+        println!("{}",cantidad_votos);
+        if let Ok(vote_pak) = Vote::new(nominado.to_string(),cantidad_votos){
 
             match self.stream.write(vote_pak.to_bytes().as_slice()) {
                 Err(e) => Err(e.to_string()),

@@ -92,10 +92,3 @@ fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> R
     Ok(())
 }
 
-// if let Ok(nominees) = ballot_box.nominees.read() {
-//     println!("{:?}", nominees);
-// }
-// ballot_box.vote_nominee("Franco".to_string()).unwrap();
-// if let Ok(nominees) = ballot_box.nominees.read() {
-//     println!("{:?}", nominees);
-// }
