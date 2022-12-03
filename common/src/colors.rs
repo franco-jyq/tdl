@@ -11,3 +11,7 @@ pub fn print_info(text:&str, param:&str){
 pub fn print_common_text(text:&str){
     println!("{}",text.italic().bold());
 }
+
+pub fn print_cyan(text:&str){
+    println!("{}",text.italic().bold().cyan());
+}

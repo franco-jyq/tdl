@@ -1,5 +1,5 @@
 use std::{io::{Write, Read},  str::FromStr};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::{Login}, colors::print_error, nominees::Nominees, payment::Payment, packet_traits::ToBytesWithPass};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::{Login}, colors::{print_error, print_cyan, print_common_text}, nominees::Nominees, payment::Payment, packet_traits::ToBytesWithPass};
 use common::vote::Vote;
 
 pub struct Client<T: Read + Write>  {
@@ -21,15 +21,15 @@ where
 
     pub fn escribir_mensaje(&mut self,mut vec_msg:Vec<&str>) -> Result<bool,String>{
         
-        let value = vec_msg.remove(0);
+        let value = vec_msg.remove(0).to_lowercase();
 
-        match value{
-            "Iniciar-Sesion" => self.iniciar_sesion(vec_msg),
-            "Registrarse" => self.registrarse(vec_msg),
-            "Votar" => self.votar(vec_msg),
-            "Consultar-Votos" => Ok(false),
-            "Consultar-Nominados" => self.consultar_nominados(),
-            "Cargar-Saldo" => self.cargar_saldo(vec_msg),
+        match value.as_str(){
+            "iniciar-sesion" => self.iniciar_sesion(vec_msg),
+            "registrarse" => self.registrarse(vec_msg),
+            "votar" => self.votar(vec_msg),
+            "consultar-votos" => Ok(false),
+            "consultar-nominados" => self.consultar_nominados(),
+            "cargar-saldo" => self.cargar_saldo(vec_msg),
             _ => {
                 print_error("Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles");
                 Ok(false)},
@@ -167,7 +167,7 @@ where
             match first_byte {
                 PacketType::INFO | PacketType::ERROR => {
                     let mut packet = InfoPacket::from_bytes(buffer.to_vec());
-
+                    
                     //if packet.is_err(){
                     //    return Err(packet.get_msg());
                     //}
@@ -176,13 +176,33 @@ where
                     Ok(())
                 }
                 _ => {
-                    println!("LLego");
-                    let nominees = Nominees::from_bytes(buffer.to_vec());
-                    println!("Nominados {:?}",nominees.nominees);
                     Ok(())
                 }
             }
             
+        }else{
+            Err("Error al leer respuesta de servidor".to_string())
+        }
+    }
+
+    pub fn imprimir_nominados(&mut self)-> Result<(),String>{
+        let mut buffer = [0; 1024];
+        if let Ok(_size) = self.stream.read(&mut buffer){
+            let aux = buffer[0];
+            let first_byte = PacketType::from_utf8(aux);
+            match first_byte {
+                PacketType::NOMINEES => {
+                    let nominees = Nominees::from_bytes(buffer.to_vec());
+
+                    print_cyan("Los Nominados Son:");
+
+                    for n in nominees.nominees.iter(){
+                        print_common_text(common::nominees::get_name(n).as_str());
+                    }
+                    Ok(())
+                }
+                _ => Ok(())
+            }
         }else{
             Err("Error al leer respuesta de servidor".to_string())
         }

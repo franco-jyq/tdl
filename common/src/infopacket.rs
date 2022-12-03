@@ -39,6 +39,7 @@ impl InfoPacket {
     pub fn get_msg(&mut self) -> String{
         self.info_msg.clone()
     }
+
 }
 
 #[cfg(test)]

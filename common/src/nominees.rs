@@ -63,6 +63,11 @@ impl Nominees {
 
         Nominees::new(names)
     }
+
+}
+
+pub fn get_name(nominee:&Nominee) -> String{
+    nominee.name.clone()
 }
 
 #[cfg(test)]
