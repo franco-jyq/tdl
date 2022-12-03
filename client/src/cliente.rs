@@ -1,5 +1,5 @@
 use std::{io::{Write, Read},  str::FromStr};
-use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::Login, colors::print_error, nominees::Nominees, payment::Payment};
+use common::{register::Register, packet_type::PacketType, infopacket::InfoPacket, login::{Login}, colors::print_error, nominees::Nominees, payment::Payment, packet_traits::ToBytesWithPass};
 use common::vote::Vote;
 
 pub struct Client<T: Read + Write>  {

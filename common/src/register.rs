@@ -1,4 +1,4 @@
-use crate::packet_type::PacketType;
+use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes, GetPassword, ToBytesWithPass}};
 
 static MAX_USERNAME_SIZE: u8 = 255;
 static MAX_PASSWORD_SIZE: u8 = 255;
@@ -6,9 +6,9 @@ static MAX_EMAIL_SIZE: u8 = 255;
 
 pub struct Register {
     packet_type: PacketType,
-    username_size: u8,
+    //username_size: u8,
     pub username: String,
-    password_size: u8,
+    //password_size: u8,
     pub password: String,
     email_size: u8,
     pub email: String,
@@ -34,35 +34,15 @@ impl Register {
 
         Ok(Register {
             packet_type: PacketType::REGISTER,
-            username_size,
+            //username_size,
             username,
-            password_size,
+            //password_size,
             password,
             email_size,
             email,
         })
     }
-
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
-        let username_size_bytes = self.username_size.to_be_bytes().to_vec();
-        let username_bytes = self.username.as_bytes().to_vec();
-        let password_size_bytes = self.password_size.to_be_bytes().to_vec();
-        let password_bytes = self.password.as_bytes().to_vec();
-        let email_size_bytes = self.email_size.to_be_bytes().to_vec();
-        let email_bytes = self.email.as_bytes().to_vec();
-        [
-            packet_type_bytes,
-            username_size_bytes,
-            username_bytes,
-            password_size_bytes,
-            password_bytes,
-            email_size_bytes,
-            email_bytes,
-        ]
-        .concat()
-    }
-
+    
     // En este si veo más lógica en un chequeo de error
     pub fn from_bytes(bytes: Vec<u8>) -> Register {
         let mut i = 0; // Contador
@@ -84,9 +64,37 @@ impl Register {
     }
 }
 
+
+impl UsernameToBytes for Register {
+    fn get_username (&self) -> String {
+        self.username.clone()
+    }
+
+    fn get_packet_type(&self) -> PacketType {
+        self.packet_type.clone()
+    }
+}
+
+impl GetPassword for Register {
+    fn get_password(&self) -> String{
+        self.password.clone()
+    }
+}
+
+impl ToBytesWithPass for Register {
+    fn to_bytes(&self) -> Vec<u8> {
+        let email_size_bytes = self.email_size.to_be_bytes().to_vec();
+        let email_bytes = self.email.as_bytes().to_vec();
+        [self.to_bytes_login_data(),email_size_bytes,email_bytes].concat()  
+    } 
+      
+}
+
 #[cfg(test)]
 
 mod register_tests {
+
+    use crate::packet_traits::ToBytesWithPass;
 
     use super::Register;
 

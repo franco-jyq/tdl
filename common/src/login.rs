@@ -1,13 +1,11 @@
-use crate::packet_type::PacketType;
+use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes, GetPassword, ToBytesWithPass}};
 
 static MAX_USERNAME_SIZE: u8 = 255;
 static MAX_PASSWORD_SIZE: u8 = 255;
 
 pub struct Login {
     packet_type: PacketType,
-    username_size: u8,
     pub username: String,
-    password_size: u8,
     pub password: String,
 }
 
@@ -26,29 +24,11 @@ impl Login {
 
         Ok(Login {
             packet_type: PacketType::LOGIN,
-            username_size,
             username,
-            password_size,
             password,
         })
     }
-
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
-        let username_size_bytes = self.username_size.to_be_bytes().to_vec();
-        let username_bytes = self.username.as_bytes().to_vec();
-        let password_size_bytes = self.password_size.to_be_bytes().to_vec();
-        let password_bytes = self.password.as_bytes().to_vec();
-        [
-            packet_type_bytes,
-            username_size_bytes,
-            username_bytes,
-            password_size_bytes,
-            password_bytes,
-        ]
-        .concat()
-    }
-
+    
     pub fn from_bytes(bytes: Vec<u8>) -> Login {
         let mut i = 0;
 
@@ -62,12 +42,32 @@ impl Login {
 
         Login::new(username, password).unwrap()
     }
+
 }
-/* 
+
+impl UsernameToBytes for Login {
+    fn get_username (&self) -> String {
+        self.username.clone()
+    }
+
+    fn get_packet_type(&self) -> PacketType {
+        self.packet_type.clone()
+    }
+}
+
+impl GetPassword for Login {
+    fn get_password(&self) -> String{
+        self.password.clone()
+    }
+}
+
+impl ToBytesWithPass for Login { }
+
 #[cfg(test)]
 
 mod login_tests {
 
+    use crate::login::ToBytesWithPass;
     use super::Login;
 
     #[test]
@@ -78,22 +78,19 @@ mod login_tests {
         )
         .unwrap();
         let expected = vec![
-            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
-            115, 115,
+            1, 4, 117, 115, 101, 114, 4, 112, 97, 115,115
         ];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 
     #[test]
-    fn register_from_bytes_test() {
+    fn login_from_bytes_test() {
         let bytes = vec![
             0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
             115, 115,
         ];
-        let pkt = Register::from_bytes(bytes);
+        let pkt = Login::from_bytes(bytes);
         assert_eq!(pkt.username, "user".to_string());
-        assert_eq!(pkt.password, "pass".to_string());
-        assert_eq!(pkt.email, "user@pass".to_string())
+        assert_eq!(pkt.password, "pass".to_string())
     }
 }
-*/

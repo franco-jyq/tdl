@@ -10,3 +10,4 @@ pub mod user;
 pub mod vote;
 pub mod login;
 pub mod colors;
+pub mod packet_traits;

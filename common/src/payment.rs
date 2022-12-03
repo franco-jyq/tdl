@@ -1,37 +1,25 @@
-use crate::packet_type::PacketType;
+use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes}};
 
 pub struct Payment {
     packet_type: PacketType,
-    username_size: u8,
+    //username_size: u8,
     pub username: String,
     pub amount: u32,
 }
 
 impl Payment {
     pub fn new(username: String, amount: u32) -> Payment {
-        let username_size = username.len() as u8;
         Payment {
             packet_type: PacketType::PAYMENT,
-            username_size,
             username,
             amount,
         }
     }
 
-    // Comentario personal: Ver el tema traits para estos dos metodos,
-    // ya que todos los paquetes comparten la misma firma
+    
     pub fn to_bytes(&mut self) -> Vec<u8> {
-        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
-        let username_size_bytes = self.username_size.to_be_bytes().to_vec();
-        let username_bytes = self.username.as_bytes().to_vec();
         let amount_bytes = self.amount.to_be_bytes().to_vec();
-        [
-            packet_type_bytes,
-            username_size_bytes,
-            username_bytes,
-            amount_bytes,
-        ]
-        .concat()
+        [self.pkt_type_and_username_to_bytes(),amount_bytes].concat()
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Payment {
@@ -45,6 +33,18 @@ impl Payment {
         Payment::new(username, amount)
     }
 }
+
+impl UsernameToBytes for Payment {
+    fn get_username (&self) -> String {
+        self.username.clone()
+    }
+
+    fn get_packet_type(&self) -> PacketType {
+        self.packet_type.clone()
+    }
+}
+
+
 
 #[cfg(test)]
 

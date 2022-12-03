@@ -95,7 +95,6 @@ impl Connection {
         match  data_base.update_money(packet.username, packet.amount){
             Err(e) => {
                 self.write_error(&e);
-                return;
             },
             Ok(saldo) => {
                 println!("Se recargo correctamente saldo");
