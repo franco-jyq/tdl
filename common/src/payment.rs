@@ -35,8 +35,8 @@ impl Payment {
 }
 
 impl UsernameToBytes for Payment {
-    fn get_username (&self) -> String {
-        self.username.clone()
+    fn get_username (&self) -> &str {
+        &self.username
     }
 
     fn get_packet_type(&self) -> PacketType {

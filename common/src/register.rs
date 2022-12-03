@@ -66,8 +66,8 @@ impl Register {
 
 
 impl UsernameToBytes for Register {
-    fn get_username (&self) -> String {
-        self.username.clone()
+    fn get_username (&self) -> &str {
+        &self.username
     }
 
     fn get_packet_type(&self) -> PacketType {
@@ -76,8 +76,8 @@ impl UsernameToBytes for Register {
 }
 
 impl GetPassword for Register {
-    fn get_password(&self) -> String{
-        self.password.clone()
+    fn get_password(&self) -> &str{
+        &self.password
     }
 }
 

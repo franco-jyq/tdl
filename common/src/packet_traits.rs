@@ -1,7 +1,7 @@
 use crate::packet_type::PacketType;
 
 pub trait UsernameToBytes {
-    fn get_username (&self) -> String;
+    fn get_username (&self) -> &str;
     fn get_packet_type(&self) -> PacketType;
 
     fn pkt_type_and_username_to_bytes (&self) -> Vec<u8> {
@@ -16,7 +16,7 @@ pub trait UsernameToBytes {
 }
 
 pub trait GetPassword {
-    fn get_password(&self) -> String;
+    fn get_password(&self) -> &str;
 }
 
 pub trait ToBytesWithPass : UsernameToBytes + GetPassword {   
