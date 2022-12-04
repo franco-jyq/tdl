@@ -28,17 +28,15 @@ impl DataBase {
         })
     }
 
-    pub fn log_new_user(&self,username: String,password: String) -> Result<(),String> {
+    pub fn log_new_user(&self, username: String, password: String) -> Result<(), String> {
         if let Ok(clients) = &mut self.clients.read() {
             if let Some(user) = clients.get(&username) {
                 if user.password == password {
                     return Ok(());
                 }
-                return Err(String::from("INVALID_PASSWORD"));                      
+                return Err(String::from("INVALID_PASSWORD"));
             }
             return Err(String::from("USERNAME_NOT_FOUND"));
-            
-        
         }
         Err(String::from("SERVER_FATAL_ERROR"))
     }
@@ -55,7 +53,7 @@ impl DataBase {
             }
             clients.insert(
                 username.to_string(),
-                User::new(vec![&username, &password, &email, &"0".to_string()]),
+                User::new(vec![&username, &password, &email, "0"]),
             );
 
             println!("DataBase:{:?}", clients);
@@ -83,7 +81,7 @@ impl DataBase {
     pub fn can_vote(&self, username: &str, amount: u32) -> Result<u32, String> {
         if let Ok(clients) = &mut self.clients.write() {
             let user = clients.get_mut(username).unwrap();
-            println!("{}{}",user.balance,amount);
+            println!("{}{}", user.balance, amount);
             if user.balance >= amount {
                 return Ok(user.balance);
             } else {
@@ -94,18 +92,18 @@ impl DataBase {
         Err(String::from("SERVER FATAL ERROR"))
     }
 
-    pub fn update_user_balance(&self, amount_to_decrease: u32 , username: &str) -> Result<u32, String> {
-
+    pub fn update_user_balance(
+        &self,
+        amount_to_decrease: u32,
+        username: &str,
+    ) -> Result<u32, String> {
         if let Ok(clients) = &mut self.clients.write() {
             let user = clients.get_mut(username).unwrap();
-            user.balance = user.balance - amount_to_decrease;
+            user.balance -= amount_to_decrease;
         }
         update_data_base(&self.clients);
         Ok(2)
     }
-
-
-
 }
 
 fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
@@ -126,7 +124,12 @@ fn update_data_base(clients: &RwLock<HashMap<String, User>>) {
         if let Ok(clients) = clients.read() {
             let clients_clone = clients.clone();
             for (_client, user) in clients_clone.into_iter() {
-                let vector: Vec<String> = vec![user.username, user.password, user.email, user.balance.to_string()];
+                let vector: Vec<String> = vec![
+                    user.username,
+                    user.password,
+                    user.email,
+                    user.balance.to_string(),
+                ];
                 let comma: String = String::from(",");
                 for atribute in vector.iter() {
                     file.write_all(atribute.as_bytes())

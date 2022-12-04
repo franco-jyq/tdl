@@ -43,24 +43,23 @@ impl BallotBox {
     }
 
     pub fn get_votes(&self) -> String {
-        let mut nominee_votes:Vec<(String,usize)> = vec![];
+        let mut nominee_votes: Vec<(String, usize)> = vec![];
 
         if let Ok(nominees) = self.nominees.read() {
             let nominees_clone = nominees.clone();
             for (nominee, _) in nominees_clone.into_iter() {
                 if let Some(votes) = nominees.get(&nominee) {
-                    nominee_votes.push((nominee,votes.clone()));
-                }else{
-                    continue
+                    nominee_votes.push((nominee, *votes));
+                } else {
+                    continue;
                 }
             }
         }
         let mut votes = String::new();
-        for v in nominee_votes{
+        for v in nominee_votes {
             votes = votes + &v.0 + "," + &v.1.to_string() + ";";
         }
         votes
-
     }
 
     pub fn get_nominees(&self) -> Vec<String> {
@@ -96,7 +95,7 @@ fn update_data_base(nominees: &RwLock<HashMap<String, usize>>) {
         if let Ok(nominees) = nominees.read() {
             let nominees_clone = nominees.clone();
             for (nominee, vote) in nominees_clone.into_iter() {
-                println!("Vote to be updated: {:?}",vote);
+                println!("Vote to be updated: {:?}", vote);
                 let vector: Vec<String> = vec![nominee, vote.to_string()];
                 let comma: String = String::from(",");
                 for atribute in vector.iter() {

@@ -5,8 +5,9 @@ use std::{
 };
 
 use crate::{
-    ballot_box::BallotBox, data_base::DataBase, infopacket::InfoPacket, nominees::Nominees,
-    packet_type::PacketType, payment::Payment, register::Register, vote::Vote, login::Login,
+    ballot_box::BallotBox, data_base::DataBase, infopacket::InfoPacket, login::Login,
+    nominees::Nominees, packet_traits::ToBytes, packet_type::PacketType, payment::Payment,
+    register::Register, vote::Vote,
 };
 
 static VOTE_COST: u32 = 100;
@@ -43,7 +44,7 @@ impl Connection {
             match first_byte {
                 PacketType::LOGIN => {
                     println!("Se recibio un login");
-                    self.handler_login(Login::from_bytes(buffer.to_vec()),&data_base)
+                    self.handler_login(Login::from_bytes(buffer.to_vec()), &data_base)
                 }
                 PacketType::REGISTER => {
                     println!("Se recibio un register");
@@ -58,18 +59,16 @@ impl Connection {
                     self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
                 }
                 PacketType::REQUEST => {
-
                     let mut info_packet = InfoPacket::from_bytes(buffer.to_vec());
                     let msg = info_packet.get_msg();
 
-                    if msg == "Obtener Nominados"{
+                    if msg == "Obtener Nominados" {
                         println!("Se solicitaron los nominados");
                         self.handler_request_nominees(ballot_box)
-                    }else if msg == "Obtener Votos"{
+                    } else if msg == "Obtener Votos" {
                         println!("Se solicitaron los votos");
                         self.handler_request_votes(ballot_box)
                     }
-
                 }
                 _ => (),
             }
@@ -77,10 +76,8 @@ impl Connection {
         }
     }
 
-    pub fn handler_login(&mut self,packet: Login,data_base: &Arc<DataBase>){
-        if let Err(e) =
-            data_base.log_new_user(packet.username.clone(), packet.password)
-        {
+    pub fn handler_login(&mut self, packet: Login, data_base: &Arc<DataBase>) {
+        if let Err(e) = data_base.log_new_user(packet.username.clone(), packet.password) {
             self.write_error(&e);
             return;
         }
@@ -102,28 +99,22 @@ impl Connection {
     }
 
     pub fn handler_payment(&mut self, packet: Payment, data_base: &Arc<DataBase>) {
-        match  data_base.update_money(packet.username, packet.amount){
+        match data_base.update_money(packet.username, packet.amount) {
             Err(e) => {
                 self.write_error(&e);
-            },
+            }
             Ok(saldo) => {
                 println!("Se recargo correctamente saldo");
                 let saldo_s = saldo.to_string();
                 self.write_info(&saldo_s)
-            }       
+            }
         }
-
-        
     }
 
     pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) {
         if self.username.is_some() {
-            
-            let amount = VOTE_COST * packet.cantidad_votos.clone() as u32;
-            if let Err(e) = data_base.can_vote(
-                self.username.as_deref().unwrap(),
-                        amount,
-            ) { 
+            let amount = VOTE_COST * packet.cantidad_votos as u32;
+            if let Err(e) = data_base.can_vote(self.username.as_deref().unwrap(), amount) {
                 self.write_error(&e);
                 println!("No es posible votar");
                 return;
@@ -131,8 +122,9 @@ impl Connection {
             if tx.send(packet).is_err() {
                 self.write_error("SERVER FATAL ERROR");
             }
-            
-            if let Err(e) = data_base.update_user_balance(amount, self.username.as_deref().unwrap()){
+
+            if let Err(e) = data_base.update_user_balance(amount, self.username.as_deref().unwrap())
+            {
                 self.write_error(&e);
                 println!("No se pudo actualiza el balance");
                 return;

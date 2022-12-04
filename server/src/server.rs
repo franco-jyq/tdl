@@ -1,4 +1,4 @@
-use common::ballot_box::{BallotBox};
+use common::ballot_box::BallotBox;
 use common::connection::Connection;
 use common::data_base::DataBase;
 use common::vote::Vote;
@@ -26,7 +26,7 @@ impl Server {
             let data_base_arc = Arc::new(data_base);
 
             if let Ok(ballot_box) = BallotBox::load_ballot("./src/ballot_data_base".to_string()) {
-                let ballot_box_arc = Arc::new(ballot_box);
+                let mut ballot_box_arc = Arc::new(ballot_box);
 
                 let (tx, rx) = mpsc::channel();
                 launch_main_handler(&mut ballot_box_arc.clone(), rx).unwrap();
@@ -35,7 +35,7 @@ impl Server {
                     Ok(listener) => self.listener = Some(listener),
                     Err(e) => return Err(e),
                 };
-                self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc.clone())?;
+                self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc)?;
                 // Pensar resultado
             }
         };
@@ -81,7 +81,9 @@ fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> R
     let _join_handler: thread::JoinHandle<_> = thread::spawn(move || loop {
         match rx.recv() {
             Ok(vote) => {
-                ballot_box_reference.vote_nominee(vote.nominado,vote.cantidad_votos.into()).unwrap();
+                ballot_box_reference
+                    .vote_nominee(vote.nominado, vote.cantidad_votos.into())
+                    .unwrap();
                 if let Ok(nominees) = ballot_box_reference.nominees.read() {
                     println!("{:?}", nominees);
                 };
@@ -91,4 +93,3 @@ fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> R
     });
     Ok(())
 }
-

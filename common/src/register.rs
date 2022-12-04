@@ -1,4 +1,7 @@
-use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes, GetPassword, ToBytesWithPass}};
+use crate::{
+    packet_traits::{GetPassword, ToBytes, ToBytesWithPass, UsernameToBytes},
+    packet_type::PacketType,
+};
 
 static MAX_USERNAME_SIZE: u8 = 255;
 static MAX_PASSWORD_SIZE: u8 = 255;
@@ -42,7 +45,7 @@ impl Register {
             email,
         })
     }
-    
+
     // En este si veo más lógica en un chequeo de error
     pub fn from_bytes(bytes: Vec<u8>) -> Register {
         let mut i = 0; // Contador
@@ -64,9 +67,8 @@ impl Register {
     }
 }
 
-
 impl UsernameToBytes for Register {
-    fn get_username (&self) -> &str {
+    fn get_username(&self) -> &str {
         &self.username
     }
 
@@ -76,25 +78,30 @@ impl UsernameToBytes for Register {
 }
 
 impl GetPassword for Register {
-    fn get_password(&self) -> &str{
+    fn get_password(&self) -> &str {
         &self.password
     }
 }
 
 impl ToBytesWithPass for Register {
-    fn to_bytes(&self) -> Vec<u8> {
+    fn to_bytes_with_pass(&self) -> Vec<u8> {
         let email_size_bytes = self.email_size.to_be_bytes().to_vec();
         let email_bytes = self.email.as_bytes().to_vec();
-        [self.to_bytes_login_data(),email_size_bytes,email_bytes].concat()  
-    } 
-      
+        [self.to_bytes_login_data(), email_size_bytes, email_bytes].concat()
+    }
+}
+
+impl ToBytes for Register {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_bytes_with_pass()
+    }
 }
 
 #[cfg(test)]
 
 mod register_tests {
 
-    use crate::packet_traits::ToBytesWithPass;
+    use crate::packet_traits::ToBytes;
 
     use super::Register;
 

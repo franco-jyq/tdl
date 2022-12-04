@@ -15,12 +15,11 @@ pub struct User {
 
 impl User {
     pub fn new(vector: Vec<&str>) -> User {
-        
         User {
             username: vector[USERNAME].to_string(),
             password: vector[PASSWORD].to_string(),
             email: vector[EMAIL].to_string(),
-            balance: FromStr::from_str(vector[BALANCE]).unwrap()
+            balance: FromStr::from_str(vector[BALANCE]).unwrap(),
         }
     }
 }

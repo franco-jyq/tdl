@@ -1,4 +1,4 @@
-use crate::packet_type::PacketType;
+use crate::{packet_traits::ToBytes, packet_type::PacketType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Nominee {
@@ -39,16 +39,6 @@ impl Nominees {
         new_nominees
     }
 
-    pub fn to_bytes(self) -> Vec<u8> {
-        let mut result = vec![];
-        result.push(self.packet_type.as_utf8().to_be_bytes().to_vec());
-        result.push(self.nominees_size.to_be_bytes().to_vec());
-        for nominee in self.nominees.iter() {
-            result.push(nominee.to_bytes())
-        }
-        result.concat()
-    }
-
     pub fn from_bytes(bytes: Vec<u8>) -> Nominees {
         let nominees_size = u32::from_be_bytes(bytes[1..5].try_into().unwrap());
         let mut i = 5; // Contador
@@ -63,10 +53,21 @@ impl Nominees {
 
         Nominees::new(names)
     }
-
 }
 
-pub fn get_name(nominee:&Nominee) -> String{
+impl ToBytes for Nominees {
+    fn to_bytes(&self) -> Vec<u8> {
+        let mut result = vec![];
+        result.push(self.packet_type.as_utf8().to_be_bytes().to_vec());
+        result.push(self.nominees_size.to_be_bytes().to_vec());
+        for nominee in self.nominees.iter() {
+            result.push(nominee.to_bytes())
+        }
+        result.concat()
+    }
+}
+
+pub fn get_name(nominee: &Nominee) -> String {
     nominee.name.clone()
 }
 
@@ -74,6 +75,8 @@ pub fn get_name(nominee:&Nominee) -> String{
 
 mod nominees_test {
     use std::vec;
+
+    use crate::packet_traits::ToBytes;
 
     use super::Nominees;
 

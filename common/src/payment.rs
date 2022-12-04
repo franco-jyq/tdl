@@ -1,4 +1,7 @@
-use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes}};
+use crate::{
+    packet_traits::{ToBytes, UsernameToBytes},
+    packet_type::PacketType,
+};
 
 pub struct Payment {
     packet_type: PacketType,
@@ -16,12 +19,6 @@ impl Payment {
         }
     }
 
-    
-    pub fn to_bytes(&mut self) -> Vec<u8> {
-        let amount_bytes = self.amount.to_be_bytes().to_vec();
-        [self.pkt_type_and_username_to_bytes(),amount_bytes].concat()
-    }
-
     pub fn from_bytes(bytes: Vec<u8>) -> Payment {
         let mut i = 0; // Contador
 
@@ -35,7 +32,7 @@ impl Payment {
 }
 
 impl UsernameToBytes for Payment {
-    fn get_username (&self) -> &str {
+    fn get_username(&self) -> &str {
         &self.username
     }
 
@@ -44,16 +41,23 @@ impl UsernameToBytes for Payment {
     }
 }
 
-
+impl ToBytes for Payment {
+    fn to_bytes(&self) -> Vec<u8> {
+        let amount_bytes = self.amount.to_be_bytes().to_vec();
+        [self.pkt_type_and_username_to_bytes(), amount_bytes].concat()
+    }
+}
 
 #[cfg(test)]
 
 mod payment_test {
+    use crate::packet_traits::ToBytes;
+
     use super::Payment;
 
     #[test]
     fn payment_to_bytes_test() {
-        let mut test_packet = Payment::new("user".to_string(), 100 as u32);
+        let test_packet = Payment::new("user".to_string(), 100 as u32);
 
         let expected = vec![2, 4, 117, 115, 101, 114, 0, 0, 0, 100];
         assert_eq!(test_packet.to_bytes(), expected);

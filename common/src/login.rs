@@ -1,4 +1,7 @@
-use crate::{packet_type::PacketType, packet_traits::{UsernameToBytes, GetPassword, ToBytesWithPass}};
+use crate::{
+    packet_traits::{GetPassword, ToBytes, ToBytesWithPass, UsernameToBytes},
+    packet_type::PacketType,
+};
 
 static MAX_USERNAME_SIZE: u8 = 255;
 static MAX_PASSWORD_SIZE: u8 = 255;
@@ -28,7 +31,7 @@ impl Login {
             password,
         })
     }
-    
+
     pub fn from_bytes(bytes: Vec<u8>) -> Login {
         let mut i = 0;
 
@@ -42,11 +45,10 @@ impl Login {
 
         Login::new(username, password).unwrap()
     }
-
 }
 
 impl UsernameToBytes for Login {
-    fn get_username (&self) -> &str {
+    fn get_username(&self) -> &str {
         &self.username
     }
 
@@ -56,30 +58,30 @@ impl UsernameToBytes for Login {
 }
 
 impl GetPassword for Login {
-    fn get_password(&self) -> &str{
+    fn get_password(&self) -> &str {
         &self.password
     }
 }
 
-impl ToBytesWithPass for Login { }
+impl ToBytesWithPass for Login {}
+impl ToBytes for Login {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_bytes_with_pass()
+    }
+}
 
 #[cfg(test)]
 
 mod login_tests {
 
-    use crate::login::ToBytesWithPass;
+    use crate::packet_traits::ToBytes;
+
     use super::Login;
 
     #[test]
     fn login_to_bytes_test() {
-        let test_packet = Login::new(
-            "user".to_string(),
-            "pass".to_string(),
-        )
-        .unwrap();
-        let expected = vec![
-            1, 4, 117, 115, 101, 114, 4, 112, 97, 115,115
-        ];
+        let test_packet = Login::new("user".to_string(), "pass".to_string()).unwrap();
+        let expected = vec![1, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 

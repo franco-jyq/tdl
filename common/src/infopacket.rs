@@ -1,4 +1,4 @@
-use crate::packet_type::PacketType;
+use crate::{packet_traits::ToBytes, packet_type::PacketType};
 
 pub struct InfoPacket {
     packet_type: PacketType,
@@ -16,13 +16,6 @@ impl InfoPacket {
         }
     }
 
-    pub fn to_bytes(&mut self) -> Vec<u8> {
-        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
-        let info_msg_size_bytes = self.info_msg_size.to_be_bytes().to_vec();
-        let info_msg_bytes = self.info_msg.as_bytes().to_vec();
-        [packet_type_bytes, info_msg_size_bytes, info_msg_bytes].concat()
-    }
-
     pub fn from_bytes(bytes: Vec<u8>) -> InfoPacket {
         let mut i = 0;
         let pkt_type = PacketType::from_utf8(bytes[0]);
@@ -32,26 +25,34 @@ impl InfoPacket {
         InfoPacket::new(pkt_type, info_msg)
     }
 
-    pub fn is_err(&mut self) -> bool{
+    pub fn is_err(&mut self) -> bool {
         self.packet_type.as_utf8() == PacketType::ERROR.as_utf8()
     }
 
-    pub fn get_msg(&mut self) -> String{
+    pub fn get_msg(&mut self) -> String {
         self.info_msg.clone()
     }
+}
 
+impl ToBytes for InfoPacket {
+    fn to_bytes(&self) -> Vec<u8> {
+        let packet_type_bytes = self.packet_type.as_utf8().to_be_bytes().to_vec();
+        let info_msg_size_bytes = self.info_msg_size.to_be_bytes().to_vec();
+        let info_msg_bytes = self.info_msg.as_bytes().to_vec();
+        [packet_type_bytes, info_msg_size_bytes, info_msg_bytes].concat()
+    }
 }
 
 #[cfg(test)]
 
 mod info_packet_test {
-    use crate::packet_type::PacketType;
+    use crate::{packet_traits::ToBytes, packet_type::PacketType};
 
     use super::InfoPacket;
 
     #[test]
     fn info_packet_to_bytes_test() {
-        let mut test_packet = InfoPacket::new(PacketType::ERROR, "error".to_string());
+        let test_packet = InfoPacket::new(PacketType::ERROR, "error".to_string());
 
         let expected = vec![4, 5, 101, 114, 114, 111, 114];
         assert_eq!(test_packet.to_bytes(), expected);
