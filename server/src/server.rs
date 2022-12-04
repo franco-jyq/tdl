@@ -81,7 +81,7 @@ fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> R
     let _join_handler: thread::JoinHandle<_> = thread::spawn(move || loop {
         match rx.recv() {
             Ok(vote) => {
-                ballot_box_reference.vote_nominee(vote.nominado).unwrap();
+                ballot_box_reference.vote_nominee(vote.nominado,vote.cantidad_votos.into()).unwrap();
                 if let Ok(nominees) = ballot_box_reference.nominees.read() {
                     println!("{:?}", nominees);
                 };

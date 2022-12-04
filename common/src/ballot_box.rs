@@ -26,11 +26,11 @@ impl BallotBox {
         })
     }
 
-    pub fn vote_nominee(&self, nominee: String) -> Result<(), String> {
+    pub fn vote_nominee(&self, nominee: String, amount: usize) -> Result<(), String> {
         if let Ok(nominees) = &mut self.nominees.write() {
             if nominees.contains_key(&nominee) {
                 if let Some(votes) = nominees.get(&nominee) {
-                    let new_votes = votes + 1;
+                    let new_votes = votes + amount;
                     nominees.insert(nominee, new_votes);
                 }
             } else {
@@ -71,10 +71,11 @@ fn load_nominees(nominees: &mut HashMap<String, usize>, reader: BufReader<File>)
 }
 
 fn update_data_base(nominees: &RwLock<HashMap<String, usize>>) {
-    if let Ok(mut file) = File::create("./src/data_file") {
+    if let Ok(mut file) = File::create("./src/ballot_data_base") {
         if let Ok(nominees) = nominees.read() {
             let nominees_clone = nominees.clone();
             for (nominee, vote) in nominees_clone.into_iter() {
+                println!("Vote to be updated: {:?}",vote);
                 let vector: Vec<String> = vec![nominee, vote.to_string()];
                 let comma: String = String::from(",");
                 for atribute in vector.iter() {

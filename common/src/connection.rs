@@ -108,9 +108,11 @@ impl Connection {
 
     pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) {
         if self.username.is_some() {
+            
+            let amount = VOTE_COST * packet.cantidad_votos.clone() as u32;
             if let Err(e) = data_base.can_vote(
                 self.username.as_deref().unwrap(),
-                VOTE_COST * packet.cantidad_votos as u32,
+                        amount,
             ) { 
                 self.write_error(&e);
                 println!("No es posible votar");
@@ -118,6 +120,12 @@ impl Connection {
             }
             if tx.send(packet).is_err() {
                 self.write_error("SERVER FATAL ERROR");
+            }
+            
+            if let Err(e) = data_base.update_user_balance(amount, self.username.as_deref().unwrap()){
+                self.write_error(&e);
+                println!("No se pudo actualiza el balance");
+                return;
             }
 
             self.write_info("VOTE ACCEPTED")

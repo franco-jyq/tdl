@@ -28,7 +28,7 @@ impl DataBase {
         })
     }
 
-    pub fn log_new_user (&self,username: String,password: String) -> Result<(),String> {
+    pub fn log_new_user(&self,username: String,password: String) -> Result<(),String> {
         if let Ok(clients) = &mut self.clients.read() {
             if let Some(user) = clients.get(&username) {
                 if user.password == password {
@@ -55,7 +55,7 @@ impl DataBase {
             }
             clients.insert(
                 username.to_string(),
-                User::new(vec![&username, &password, &email], 0),
+                User::new(vec![&username, &password, &email, &"0".to_string()]),
             );
 
             println!("DataBase:{:?}", clients);
@@ -76,7 +76,7 @@ impl DataBase {
                 None => return Err(String::from("USER NOT LOGGED")),
             }
         }
-
+        update_data_base(&self.clients);
         Ok(updated_balance)
     }
 
@@ -84,7 +84,7 @@ impl DataBase {
         if let Ok(clients) = &mut self.clients.write() {
             let user = clients.get_mut(username).unwrap();
             println!("{}{}",user.balance,amount);
-            if user.balance > amount {
+            if user.balance >= amount {
                 return Ok(user.balance);
             } else {
                 return Err(format!("INSUFFICIENT FUNDS: {}", user.balance));
@@ -93,6 +93,19 @@ impl DataBase {
 
         Err(String::from("SERVER FATAL ERROR"))
     }
+
+    pub fn update_user_balance(&self, amount_to_decrease: u32 , username: &str) -> Result<u32, String> {
+
+        if let Ok(clients) = &mut self.clients.write() {
+            let user = clients.get_mut(username).unwrap();
+            user.balance = user.balance - amount_to_decrease;
+        }
+        update_data_base(&self.clients);
+        Ok(2)
+    }
+
+
+
 }
 
 fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
@@ -100,7 +113,7 @@ fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
         if let Ok(linea) = line {
             let vector_split = linea.split(',').collect::<Vec<&str>>();
             let username = vector_split[0].to_string();
-            let user = User::new(vector_split, 0); // tiene que ser mutable para despues
+            let user = User::new(vector_split); // tiene que ser mutable para despues
             clients.entry(username).or_insert(user);
         } else {
             println!("Hubo un error con la linea del archivo para la base de datos",);
@@ -113,7 +126,7 @@ fn update_data_base(clients: &RwLock<HashMap<String, User>>) {
         if let Ok(clients) = clients.read() {
             let clients_clone = clients.clone();
             for (_client, user) in clients_clone.into_iter() {
-                let vector: Vec<String> = vec![user.username, user.password, user.email];
+                let vector: Vec<String> = vec![user.username, user.password, user.email, user.balance.to_string()];
                 let comma: String = String::from(",");
                 for atribute in vector.iter() {
                     file.write_all(atribute.as_bytes())
