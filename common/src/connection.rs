@@ -58,8 +58,18 @@ impl Connection {
                     self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
                 }
                 PacketType::REQUEST => {
-                    println!("Se solicitaron los nominados");
-                    self.handler_request(ballot_box)
+
+                    let mut info_packet = InfoPacket::from_bytes(buffer.to_vec());
+                    let msg = info_packet.get_msg();
+
+                    if msg == "Obtener Nominados"{
+                        println!("Se solicitaron los nominados");
+                        self.handler_request_nominees(ballot_box)
+                    }else if msg == "Obtener Votos"{
+                        println!("Se solicitaron los votos");
+                        self.handler_request_votes(ballot_box)
+                    }
+
                 }
                 _ => (),
             }
@@ -126,12 +136,25 @@ impl Connection {
         // Mandar mensaje si todo ok, err si no esta logueado
     }
 
-    pub fn handler_request(&mut self, ballot_box: &mut Arc<BallotBox>) {
+    pub fn handler_request_votes(&mut self, ballot_box: &mut Arc<BallotBox>) {
+        if self.username.is_some() {
+            let votes = ballot_box.get_votes();
+            let nom_pkt = InfoPacket::new(PacketType::INFO, votes).to_bytes();
+
+            self.stream.write(&nom_pkt).unwrap(); // Consultar que hacemos de aca
+            println!("Votos enviados correctamente");
+            return;
+        }
+
+        self.write_error("PLEASE LOGIN OR REGISTER");
+    }
+
+    pub fn handler_request_nominees(&mut self, ballot_box: &mut Arc<BallotBox>) {
         if self.username.is_some() {
             let nominees = ballot_box.get_nominees();
             let nom_pkt = Nominees::new(nominees).to_bytes();
-            self.stream.write(&nom_pkt).unwrap(); // Consultar que hacemos de aca
-            println!("Nominados enviados correctamente");
+            self.stream.write(&nom_pkt).unwrap();
+            println!("Votos enviados correctamente");
             return;
         }
 

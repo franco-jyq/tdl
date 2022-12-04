@@ -27,7 +27,7 @@ where
             "iniciar-sesion" => self.iniciar_sesion(vec_msg),
             "registrarse" => self.registrarse(vec_msg),
             "votar" => self.votar(vec_msg),
-            "consultar-votos" => Ok(false),
+            "consultar-votos" => self.consultar_votos(),
             "consultar-nominados" => self.consultar_nominados(),
             "cargar-saldo" => self.cargar_saldo(vec_msg),
             _ => {
@@ -131,6 +131,20 @@ where
                 Ok(true)
             } 
         }
+    }
+
+    fn consultar_votos(&mut self)-> Result<bool,String>{
+
+        let mut info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Votos".to_string());              
+        match self.stream.write(info_packet.to_bytes().as_slice()) {
+            Err(e) => Err(e.to_string()),
+            Ok(_) => {
+                if self.stream.flush().is_err() {
+                    return Err("Error con flush".to_string());
+                }
+                Ok(true)
+            } 
+        } 
     }
 
     fn cargar_saldo(&mut self,mut args:Vec<&str>) -> Result<bool,String>{
