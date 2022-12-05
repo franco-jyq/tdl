@@ -168,6 +168,29 @@ where
         }
     }
 
+    pub fn imprimir_votados(&mut self) -> Result<(), String> {
+        let mut buffer = [0; 1024];
+        if let Ok(_size) = self.stream.read(&mut buffer) {
+            let aux = buffer[0];
+            let first_byte = PacketType::from_utf8(aux);
+            match first_byte {
+                PacketType::INFO => {
+                    let mut votados = InfoPacket::from_bytes(buffer.to_vec());
+
+                    print_cyan("Los Votos Son:");
+                    for v in votados.get_msg().split(';'){
+                        println!("{}",v);
+                    }
+                    
+                    Ok(())
+                }
+                _ => Ok(()),
+            }
+        } else {
+            Err("Error al leer respuesta de servidor".to_string())
+        }
+    }
+
     fn enviar_mensaje<U: ToBytes>(&mut self, u: U) -> Result<bool, String> {
         match self.stream.write(u.to_bytes().as_slice()) {
             Err(e) => Err(e.to_string()),

@@ -77,6 +77,14 @@ fn inicializar_cliente(stream: TcpStream) {
                                     break;
                                 }
                             }
+                        }else if command == *"consultar-votos" {
+                            match cliente.imprimir_votados() {
+                                Ok(_) => continue,
+                                Err(e) => {
+                                    println!("{e}");
+                                    break;
+                                }
+                            }
                         }
                         match cliente.escuchar_respuesta() {
                             Ok(_) => continue,
