@@ -14,13 +14,13 @@ impl BallotBox {
         let file: File = match File::open(file_path) {
             Ok(data_file) => data_file,
             Err(_) => {
-                return Err(String::from("BALLOT_DATABASE_FILE_NOT_FOUND"));
+                return Err(String::from("Archivo para Ballot Box no encontrado"));
             }
         };
         let reader = BufReader::new(file);
         let mut nominees = HashMap::new();
         load_nominees(&mut nominees, reader);
-
+        info!("Ballot Box inicializada correctamente");
         Ok(BallotBox {
             nominees: RwLock::new(nominees),
         })

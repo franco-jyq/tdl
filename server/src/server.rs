@@ -3,7 +3,7 @@ use common::vote::Vote;
 use crate::ballot_box::BallotBox;
 use crate::data_base::DataBase;
 use crate::threadpool::ThreadPool;
-use crate::connection::Connection;
+use crate::connection::{Connection};
 use std::net::{TcpListener, TcpStream};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc};
@@ -49,14 +49,15 @@ impl Server {
         tx: Sender<Vote>,
         ballot_box: &mut Arc<BallotBox>,
     ) -> io::Result<()> {
+        info!("Escuchando conexiones");
         let pool = ThreadPool::new(THREAD_NUMBER);
-        for client in self.listener.as_ref().unwrap().incoming().flatten() {
+        for (nro_connection, client) in self.listener.as_ref().unwrap().incoming().flatten().enumerate() {
             let tx_clone = tx.clone();
             let mut ballot_clone = ballot_box.clone();
-            println!("Recibi conexión");
+            info!("Conexión recibida");
             let db_clone = data_base.clone();
             pool.execute(move || {
-                spawn_connection(client, db_clone, tx_clone, &mut ballot_clone);
+                spawn_connection(client, db_clone, tx_clone, &mut ballot_clone,nro_connection.try_into().unwrap());
             });
             //Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
         }
@@ -69,9 +70,10 @@ fn spawn_connection(
     data_base: Arc<DataBase>,
     tx: Sender<Vote>,
     ballot_box: &mut Arc<BallotBox>,
+    nro_connection: u32
 ) {
     if let Ok(client_m) = client.try_clone() {
-        let mut connection = Connection::new(client_m);
+        let mut connection = Connection::new(client_m,nro_connection);
         connection.start(data_base, tx, ballot_box);
     }
 }

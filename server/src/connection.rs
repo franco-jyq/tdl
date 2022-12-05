@@ -16,13 +16,15 @@ static VOTE_COST: u32 = 100;
 pub struct Connection {
     stream: TcpStream,
     username: Option<String>,
+    number: u32,
 }
 
 impl Connection {
-    pub fn new(stream: TcpStream) -> Connection {
+    pub fn new(stream: TcpStream,number: u32) -> Connection {
         Connection {
             stream,
             username: None,
+            number
         }
     }
 
@@ -40,36 +42,36 @@ impl Connection {
             }
             let aux = buffer[0];
             let first_byte = PacketType::from_utf8(aux);
-            println!("The first byte is {:?}", first_byte);
             match first_byte {
                 PacketType::LOGIN => {
-                    println!("Se recibio un login");
+                    info!("Conexión {} Se recibio un login",self.number);
                     self.handler_login(Login::from_bytes(buffer.to_vec()), &data_base)
                 }
                 PacketType::REGISTER => {
-                    println!("Se recibio un register");
+                    info!("Conexión {} Se recibio un register",self.number);
                     self.handler_register(Register::from_bytes(buffer.to_vec()), &data_base)
                 }
                 PacketType::PAYMENT => {
-                    println!("Se recibio un pago");
+                    info!("Conexión {} Se recibio un payment",self.number);
                     self.handler_payment(Payment::from_bytes(buffer.to_vec()), &data_base)
                 }
                 PacketType::VOTE => {
-                    println!("Se recibio un voto");
+                    info!("Conexión {} Se recibio un vote",self.number);
                     self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
                 }
                 PacketType::REQUEST => {
+                    info!("Conexión {} Se recibio un request",self.number);
                     let mut info_packet = InfoPacket::from_bytes(buffer.to_vec());
                     let msg = info_packet.get_msg();
 
                     if msg == "Obtener Nominados" {
-                        println!("Se solicitaron los nominados");
+                        info!("Se solicitaron los nominados");
                         self.handler_request_nominees(ballot_box)
                     } else if msg == "Obtener Votos" {
-                        println!("Se solicitaron los votos");
+                        info!("Se solicitaron los votos");
                         self.handler_request_votes(ballot_box)
                     }else if msg == "Obtener Saldo" {
-                        println!("Saldo solicitado");
+                        info!("Saldo solicitado");
                         self.handler_request_saldo(&data_base)
                     }
                 }
@@ -84,9 +86,10 @@ impl Connection {
             self.write_error(&e);
             return;
         }
+        info!("Conexión {} - Se logueo correctamente al cliente: {}",self.number,packet.username);
         self.username = Some(packet.username);
-        println!("Se logueo correctamente al cliente");
-        self.write_info("LOGIN ACCEPTED")
+        
+        self.write_info("Login aceptado")
     }
 
     pub fn handler_register(&mut self, packet: Register, data_base: &Arc<DataBase>) {
@@ -96,9 +99,9 @@ impl Connection {
             self.write_error(&e);
             return;
         }
+        info!("Conexión {} - Se registro correctamente al cliente: {}",self.number,packet.username);
         self.username = Some(packet.username);
-        println!("Se registro correctamente al cliente");
-        self.write_info("REGISTRATION ACCEPTED")
+        self.write_info("Register aceptado")
     }
 
     pub fn handler_payment(&mut self, packet: Payment, data_base: &Arc<DataBase>) {
@@ -107,7 +110,7 @@ impl Connection {
                 self.write_error(&e);
             }
             Ok(saldo) => {
-                println!("Se recargo correctamente saldo");
+                info!("Conexión {} - Se recargo correctamente saldo al cliente: {:?}",self.number,self.username);
                 let saldo_s = saldo.to_string();
                 self.write_info(&saldo_s)
             }
@@ -144,8 +147,7 @@ impl Connection {
         let money = data_base.get_money(&copy_user).unwrap();
         let nom_pkt = InfoPacket::new(PacketType::INFO, money.to_string()).to_bytes();
         self.stream.write(&nom_pkt).unwrap();
-        println!("Saldo enviado correctamente");
-        return;
+        info!("Conexión {} - Saldo enviado correctamente al cliente: {:?}",self.number,self.username);
     }
 
     pub fn handler_request_votes(&mut self, ballot_box: &mut Arc<BallotBox>) {
@@ -166,7 +168,7 @@ impl Connection {
             let nominees = ballot_box.get_nominees();
             let nom_pkt = Nominees::new(nominees).to_bytes();
             self.stream.write(&nom_pkt).unwrap();
-            println!("Votos enviados correctamente");
+            info!("Conexión {} - Votos enviados correctamente al cliente: {:?}",self.number,self.username);
             return;
         }
 

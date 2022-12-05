@@ -19,13 +19,13 @@ impl DataBase {
         let file: File = match File::open(file_path) {
             Ok(data_file) => data_file,
             Err(_) => {
-                return Err(String::from("DATABASE_FILE_NOT_FOUND"));
+                return Err(String::from("Archivo para Data Base no encontrado"));
             }
         };
         let reader = BufReader::new(file);
         let mut clients = HashMap::new();
         load_users(&mut clients, reader);
-
+        info!("Data Base inicializada correctamente");
         Ok(DataBase {
             clients: RwLock::new(clients),
         })
