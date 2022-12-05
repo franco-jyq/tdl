@@ -68,6 +68,9 @@ impl Connection {
                     } else if msg == "Obtener Votos" {
                         println!("Se solicitaron los votos");
                         self.handler_request_votes(ballot_box)
+                    }else if msg == "Obtener Saldo" {
+                        println!("Saldo solicitado");
+                        self.handler_request_saldo(&data_base)
                     }
                 }
                 _ => (),
@@ -134,6 +137,15 @@ impl Connection {
         }
 
         // Mandar mensaje si todo ok, err si no esta logueado
+    }
+    pub fn handler_request_saldo(&mut self, data_base: &Arc<DataBase>) {
+
+        let copy_user = self.username.clone().unwrap();
+        let money = data_base.get_money(&copy_user).unwrap();
+        let nom_pkt = InfoPacket::new(PacketType::INFO, money.to_string()).to_bytes();
+        self.stream.write(&nom_pkt).unwrap();
+        println!("Saldo enviado correctamente");
+        return;
     }
 
     pub fn handler_request_votes(&mut self, ballot_box: &mut Arc<BallotBox>) {

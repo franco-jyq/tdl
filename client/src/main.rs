@@ -34,6 +34,7 @@ fn listar_msg() {
     print_common_text("registrarse nombre-usuario contraseña mail");
     print_common_text("consultar-nominados");
     print_common_text("consultar-votos");
+    print_common_text("consultar-saldo");
     print_common_text("votar nominado cantidad");
     print_common_text("cargar-Saldo nombre-usuario monto");
     print_common_text("salir");

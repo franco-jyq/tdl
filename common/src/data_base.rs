@@ -63,6 +63,14 @@ impl DataBase {
         Ok(())
     }
 
+    pub fn get_money(&self,username:&String) -> Result<u32, String>{
+        if let Ok(clients) = &mut self.clients.write() {
+            let user = clients.get_mut(username).unwrap();
+            return Ok(user.balance);
+        }
+        Err(String::from("GET MONEY ERR"))
+    }
+
     pub fn update_money(&self, username: String, amount: u32) -> Result<u32, String> {
         let mut updated_balance = amount;
         if let Ok(clients) = &mut self.clients.write() {

@@ -36,6 +36,7 @@ where
             "consultar-votos" => self.consultar_votos(),
             "consultar-nominados" => self.consultar_nominados(),
             "cargar-saldo" => self.cargar_saldo(vec_msg),
+            "consultar-saldo" => self.consultar_saldo(),
             _ => {
                 print_error(
                     "Nombre de mensaje inválido, ultilize Ayuda para ver los mensajes disponibles",
@@ -106,6 +107,11 @@ where
 
     fn consultar_votos(&mut self) -> Result<bool, String> {
         let info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Votos".to_string());
+        self.enviar_mensaje(info_packet)
+    }
+
+    fn consultar_saldo(&mut self) -> Result<bool, String> {
+        let info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Saldo".to_string());
         self.enviar_mensaje(info_packet)
     }
 
