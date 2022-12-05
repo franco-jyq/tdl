@@ -7,6 +7,9 @@ use std::{
 
 use crate::user::User;
 
+
+
+
 pub struct DataBase {
     clients: RwLock<HashMap<String, User>>,
 }

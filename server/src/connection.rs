@@ -4,11 +4,11 @@ use std::{
     sync::{mpsc::Sender, Arc},
 };
 
-use crate::{
-    ballot_box::BallotBox, data_base::DataBase, infopacket::InfoPacket, login::Login,
-    nominees::Nominees, packet_traits::ToBytes, packet_type::PacketType, payment::Payment,
-    register::Register, vote::Vote,
-};
+use common::{vote::Vote, packet_type::PacketType, login::Login, register::Register, payment::Payment, infopacket::InfoPacket, packet_traits::ToBytes, nominees::Nominees};
+
+use crate::{ballot_box::BallotBox, data_base::DataBase};
+
+
 
 static VOTE_COST: u32 = 100;
 

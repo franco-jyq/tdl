@@ -1,7 +1,4 @@
-pub mod ballot_box;
 pub mod colors;
-pub mod connection;
-pub mod data_base;
 pub mod infopacket;
 pub mod login;
 pub mod nominees;
@@ -9,5 +6,4 @@ pub mod packet_traits;
 pub mod packet_type;
 pub mod payment;
 pub mod register;
-pub mod user;
 pub mod vote;

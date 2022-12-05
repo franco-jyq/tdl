@@ -1,9 +1,9 @@
-use common::ballot_box::BallotBox;
-use common::connection::Connection;
-use common::data_base::DataBase;
 use common::vote::Vote;
 
+use crate::ballot_box::BallotBox;
+use crate::data_base::DataBase;
 use crate::threadpool::ThreadPool;
+use crate::connection::Connection;
 use std::net::{TcpListener, TcpStream};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{mpsc, Arc};
