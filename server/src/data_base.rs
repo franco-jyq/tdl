@@ -7,9 +7,6 @@ use std::{
 
 use crate::user::User;
 
-
-
-
 pub struct DataBase {
     clients: RwLock<HashMap<String, User>>,
 }
@@ -66,7 +63,7 @@ impl DataBase {
         Ok(())
     }
 
-    pub fn get_money(&self,username:&String) -> Result<u32, String>{
+    pub fn get_money(&self, username: &String) -> Result<u32, String> {
         if let Ok(clients) = &mut self.clients.write() {
             let user = clients.get_mut(username).unwrap();
             return Ok(user.balance);

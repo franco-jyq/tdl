@@ -79,9 +79,7 @@ fn load_nominees(nominees: &mut HashMap<String, usize>, reader: BufReader<File>)
         if let Ok(linea) = line {
             let vector_split = linea.split(',').collect::<Vec<&str>>();
             let nominee = vector_split[0].to_string();
-            //println!("{:?}", nominee);
             if let Ok(votes) = vector_split[1].to_string().parse() {
-                //println!("{:?}", votes);
                 nominees.entry(nominee).or_insert(votes);
             }
         } else {

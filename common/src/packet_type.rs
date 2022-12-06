@@ -9,8 +9,8 @@ pub enum PacketType {
     RequestNominees,
     RequestBalance,
     RequestResults,
-    Nominees,   
-    Default
+    Nominees,
+    Default,
 }
 
 impl PacketType {
@@ -26,7 +26,7 @@ impl PacketType {
             8 => PacketType::RequestBalance,
             9 => PacketType::RequestResults,
             10 => PacketType::Nominees,
-            _ => PacketType::Default
+            _ => PacketType::Default,
         }
     }
 
@@ -42,7 +42,7 @@ impl PacketType {
             PacketType::RequestBalance => 8_u8,
             PacketType::RequestResults => 9_u8,
             PacketType::Nominees => 10_u8,
-            _ => 11_u8
+            _ => 11_u8,
         }
     }
 }

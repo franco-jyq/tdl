@@ -1,9 +1,9 @@
 use server::Server;
+pub mod ballot_box;
+pub mod connection;
+pub mod data_base;
 pub mod server;
 pub mod threadpool;
-pub mod connection;
-pub mod ballot_box;
-pub mod data_base;
 pub mod user;
 
 #[macro_use]

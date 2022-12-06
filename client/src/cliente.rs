@@ -184,10 +184,10 @@ where
                     let mut votados = InfoPacket::from_bytes(buffer.to_vec());
 
                     print_cyan("Los Votos Son:");
-                    for v in votados.get_msg().split(';'){
-                        println!("{}",v);
+                    for v in votados.get_msg().split(';') {
+                        println!("{}", v);
                     }
-                    
+
                     Ok(())
                 }
                 _ => Ok(()),
