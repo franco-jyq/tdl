@@ -1,6 +1,6 @@
 use std::{
     io::{Read, Write},
-    net::TcpStream,
+    net::{TcpStream, Shutdown},
     sync::{mpsc::Sender, Arc},
 };
 
@@ -74,7 +74,10 @@ impl Connection {
                 _ => (), // Aca habria que cortar la conexion, mandar error
             }
             buffer = [0; 1024];
+        
         }
+        info!("Conexion {} finalizada", self.number);
+
     }
 
     pub fn handler_login(&mut self, packet: Login, data_base: &Arc<DataBase>) {

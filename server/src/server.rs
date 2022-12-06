@@ -25,13 +25,18 @@ impl Server {
 
     pub fn start_server(&mut self) {
         let data_base = DataBase::new("./src/data_file").unwrap();
+
+        
         let data_base_arc = Arc::new(data_base);
 
         let ballot_box = BallotBox::load_ballot("./src/ballot_data_base".to_string()).unwrap();
         let mut ballot_box_arc = Arc::new(ballot_box);
 
         let (tx, rx) = mpsc::channel();
-        launch_main_handler(&mut ballot_box_arc.clone(), rx).unwrap();
+        
+        if let Err(e) = launch_main_handler(&mut ballot_box_arc.clone(), rx){
+            println!("{:?}", e);
+        }
 
         self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc);
         // Pensar resultado
