@@ -64,7 +64,7 @@ impl Server {
                     nro_connection.try_into().unwrap(),
                 );
             });
-            //Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
+            
         }
     }
 }
@@ -78,8 +78,12 @@ fn spawn_connection(
 ) {
     if let Ok(client_m) = client.try_clone() {
         let mut connection = Connection::new(client_m, nro_connection);
-        connection.start(data_base, tx, ballot_box);
+        if let Err(e) = connection.start(data_base, tx, ballot_box){
+            info!("Conexión {} - Finalizada: {}",nro_connection,e)
+        }
+        
     }
+    info!("Conexión {} - Finalizada",nro_connection)
 }
 
 fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> Result<(), String> {
