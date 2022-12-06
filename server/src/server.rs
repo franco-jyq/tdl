@@ -1,6 +1,6 @@
 use common::vote::Vote;
 
-use crate::ballot_box::BallotBox;
+use crate::ballot_box::{BallotBox};
 use crate::data_base::DataBase;
 use crate::threadpool::ThreadPool;
 use crate::connection::{Connection};
@@ -13,34 +13,31 @@ static PORT: &str = "127.0.0.1:8095";
 static THREAD_NUMBER: usize = 10;
 
 pub struct Server {
-    listener: Option<TcpListener>,
+    listener: TcpListener,
 }
 
 impl Server {
-    pub fn new() -> Self {
-        Server { listener: None }
+    pub fn new() -> io::Result<Server> {
+        Ok(Server {listener : TcpListener::bind(PORT).unwrap()})     
     }
-    // . ./src/data_file
-    pub fn start_server(&mut self) -> io::Result<()> {
-        if let Ok(data_base) = DataBase::new("./src/data_file") {
-            let data_base_arc = Arc::new(data_base);
+    
+    pub fn start_server(&mut self) {
+        let data_base = DataBase::new("./src/data_file").unwrap(); 
+        let data_base_arc = Arc::new(data_base);
 
-            if let Ok(ballot_box) = BallotBox::load_ballot("./src/ballot_data_base".to_string()) {
-                let mut ballot_box_arc = Arc::new(ballot_box);
+        let ballot_box = BallotBox::load_ballot("./src/ballot_data_base".to_string()).unwrap(); 
+        let mut ballot_box_arc = Arc::new(ballot_box);
 
-                let (tx, rx) = mpsc::channel();
-                launch_main_handler(&mut ballot_box_arc.clone(), rx).unwrap();
+        let (tx, rx) = mpsc::channel();
+        launch_main_handler(&mut ballot_box_arc.clone(), rx).unwrap();
 
-                match TcpListener::bind(PORT) {
-                    Ok(listener) => self.listener = Some(listener),
-                    Err(e) => return Err(e),
-                };
-                self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc)?;
+                
+        self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc);
                 // Pensar resultado
-            }
-        };
+            
+        
 
-        Ok(())
+        
     }
 
     fn obtain_connections(
@@ -48,10 +45,10 @@ impl Server {
         data_base: Arc<DataBase>,
         tx: Sender<Vote>,
         ballot_box: &mut Arc<BallotBox>,
-    ) -> io::Result<()> {
+    )  {
         info!("Escuchando conexiones");
         let pool = ThreadPool::new(THREAD_NUMBER);
-        for (nro_connection, client) in self.listener.as_ref().unwrap().incoming().flatten().enumerate() {
+        for (nro_connection, client) in self.listener.incoming().flatten().enumerate() {
             let tx_clone = tx.clone();
             let mut ballot_clone = ballot_box.clone();
             info!("Conexión recibida");
@@ -61,7 +58,7 @@ impl Server {
             });
             //Err(String::from("Error con el cliente")); // Creo que en error simplemente deberia continuar
         }
-        Ok(())
+        
     }
 }
 

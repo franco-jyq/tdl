@@ -1,4 +1,3 @@
-use std::io;
 use server::Server;
 pub mod server;
 pub mod threadpool;
@@ -10,11 +9,9 @@ pub mod user;
 #[macro_use]
 extern crate log;
 
-fn main() -> io::Result<()> {
-    env_logger::init();
-    //let mut builder = Builder::from_default_env();
-    //builder.
+fn main() {
+    env_logger::builder().format_target(false).init();
     info!("Inicializando Servidor");
-    let mut server = Server::new();
+    let mut server = Server::new().unwrap();
     server.start_server()
 }

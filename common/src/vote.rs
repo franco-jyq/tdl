@@ -19,7 +19,7 @@ impl Vote {
         }
 
         Ok(Vote {
-            packet_type: PacketType::VOTE,
+            packet_type: PacketType::Vote,
             nominado_size,
             nominado,
             cantidad_votos,
@@ -66,14 +66,14 @@ mod vote_tests {
     #[test]
     fn vote_to_bytes_test() {
         let test_packet = Vote::new("user".to_string(), 2).unwrap();
-        let expected = vec![3, 4, 117, 115, 101, 114, 2];
+        let expected = vec![4, 4, 117, 115, 101, 114, 2];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 
     #[test]
     fn vote_from_bytes_test() {
         let expected_packet = Vote::new("user".to_string(), 2).unwrap();
-        let bytes = vec![3, 4, 117, 115, 101, 114, 2];
+        let bytes = vec![4, 4, 117, 115, 101, 114, 2];
         let test_packet = Vote::from_bytes(bytes);
         assert_eq!(test_packet.cantidad_votos, expected_packet.cantidad_votos);
     }

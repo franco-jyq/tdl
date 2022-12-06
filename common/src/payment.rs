@@ -5,7 +5,6 @@ use crate::{
 
 pub struct Payment {
     packet_type: PacketType,
-    //username_size: u8,
     pub username: String,
     pub amount: u32,
 }
@@ -13,7 +12,7 @@ pub struct Payment {
 impl Payment {
     pub fn new(username: String, amount: u32) -> Payment {
         Payment {
-            packet_type: PacketType::PAYMENT,
+            packet_type: PacketType::Payment,
             username,
             amount,
         }
@@ -59,13 +58,13 @@ mod payment_test {
     fn payment_to_bytes_test() {
         let test_packet = Payment::new("user".to_string(), 100 as u32);
 
-        let expected = vec![2, 4, 117, 115, 101, 114, 0, 0, 0, 100];
+        let expected = vec![3, 4, 117, 115, 101, 114, 0, 0, 0, 100];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 
     #[test]
     fn payment_from_bytes_test() {
-        let bytes = vec![2, 4, 117, 115, 101, 114, 0, 0, 0, 15];
+        let bytes = vec![3, 4, 117, 115, 101, 114, 0, 0, 0, 15];
 
         let pkt = Payment::from_bytes(bytes);
         assert_eq!(pkt.username, "user".to_string());

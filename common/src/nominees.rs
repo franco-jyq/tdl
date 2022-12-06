@@ -24,7 +24,7 @@ pub struct Nominees {
 impl Nominees {
     pub fn new(names: Vec<String>) -> Nominees {
         let mut new_nominees = Nominees {
-            packet_type: PacketType::NOMINEES,
+            packet_type: PacketType::Nominees,
             nominees_size: 0,
             nominees: vec![],
         };
@@ -86,7 +86,7 @@ mod nominees_test {
         let test_packet = Nominees::new(names);
 
         let expected = vec![
-            7, 0, 0, 0, 12, 4, 106, 117, 97, 110, 6, 102, 114, 97, 110, 99, 111,
+            10, 0, 0, 0, 12, 4, 106, 117, 97, 110, 6, 102, 114, 97, 110, 99, 111,
         ];
         assert_eq!(test_packet.to_bytes(), expected);
     }
@@ -96,7 +96,7 @@ mod nominees_test {
         let names = vec!["juan".to_string(), "axel".to_string()];
         let expected_packet = Nominees::new(names);
 
-        let bytes = vec![7, 0, 0, 0, 10, 4, 106, 117, 97, 110, 4, 97, 120, 101, 108];
+        let bytes = vec![10, 0, 0, 0, 10, 4, 106, 117, 97, 110, 4, 97, 120, 101, 108];
         let pkt = Nominees::from_bytes(bytes);
         assert_eq!(pkt.nominees, expected_packet.nominees);
     }
@@ -107,7 +107,7 @@ mod nominees_test {
         let expected_packet = Nominees::new(names);
 
         let bytes = vec![
-            7, 0, 0, 0, 16, 4, 106, 117, 97, 110, 6, 102, 114, 97, 110, 99, 111, 4, 97, 120, 101,
+            10, 0, 0, 0, 16, 4, 106, 117, 97, 110, 6, 102, 114, 97, 110, 99, 111, 4, 97, 120, 101,
             108,
         ];
         let pkt = Nominees::from_bytes(bytes);

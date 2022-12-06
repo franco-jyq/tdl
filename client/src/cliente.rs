@@ -101,17 +101,17 @@ where
 
     fn consultar_nominados(&mut self) -> Result<bool, String> {
         let info_packet =
-            InfoPacket::new(PacketType::from_utf8(6), "Obtener Nominados".to_string());
+            InfoPacket::new(PacketType::RequestNominees, "Obtener Nominados".to_string());
         self.enviar_mensaje(info_packet)
     }
 
     fn consultar_votos(&mut self) -> Result<bool, String> {
-        let info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Votos".to_string());
+        let info_packet = InfoPacket::new(PacketType::RequestResults, "Obtener Votos".to_string());
         self.enviar_mensaje(info_packet)
     }
 
     fn consultar_saldo(&mut self) -> Result<bool, String> {
-        let info_packet = InfoPacket::new(PacketType::from_utf8(6), "Obtener Saldo".to_string());
+        let info_packet = InfoPacket::new(PacketType::RequestBalance, "Obtener Saldo".to_string());
         self.enviar_mensaje(info_packet)
     }
 
@@ -134,7 +134,7 @@ where
             let aux = buffer[0];
             let first_byte = PacketType::from_utf8(aux);
             match first_byte {
-                PacketType::INFO | PacketType::ERROR => {
+                PacketType::Info | PacketType::Error => {
                     let mut packet = InfoPacket::from_bytes(buffer.to_vec());
 
                     //if packet.is_err(){
@@ -157,7 +157,7 @@ where
             let aux = buffer[0];
             let first_byte = PacketType::from_utf8(aux);
             match first_byte {
-                PacketType::NOMINEES => {
+                PacketType::Nominees => {
                     let nominees = Nominees::from_bytes(buffer.to_vec());
 
                     print_cyan("Los Nominados Son:");
@@ -180,7 +180,7 @@ where
             let aux = buffer[0];
             let first_byte = PacketType::from_utf8(aux);
             match first_byte {
-                PacketType::INFO => {
+                PacketType::Info => {
                     let mut votados = InfoPacket::from_bytes(buffer.to_vec());
 
                     print_cyan("Los Votos Son:");

@@ -1,42 +1,48 @@
 #[derive(Debug, Clone)]
 pub enum PacketType {
-    REGISTER,
-    LOGIN,
-    PAYMENT,
-    DEFAULT,
-    VOTE,
-    ERROR,
-    INFO,
-    REQUEST,
-    NOMINEES,
+    Register,
+    Login,
+    Payment,
+    Vote,
+    Error,
+    Info,
+    RequestNominees,
+    RequestBalance,
+    RequestResults,
+    Nominees,   
+    Default
 }
 
 impl PacketType {
     pub fn from_utf8(value: u8) -> PacketType {
         match value {
-            0 => PacketType::REGISTER,
-            1 => PacketType::LOGIN,
-            2 => PacketType::PAYMENT,
-            3 => PacketType::VOTE,
-            4 => PacketType::ERROR,
-            5 => PacketType::INFO,
-            6 => PacketType::REQUEST,
-            7 => PacketType::NOMINEES,
-            _ => PacketType::DEFAULT,
+            1 => PacketType::Register,
+            2 => PacketType::Login,
+            3 => PacketType::Payment,
+            4 => PacketType::Vote,
+            5 => PacketType::Error,
+            6 => PacketType::Info,
+            7 => PacketType::RequestNominees,
+            8 => PacketType::RequestBalance,
+            9 => PacketType::RequestResults,
+            10 => PacketType::Nominees,
+            _ => PacketType::Default
         }
     }
 
     pub fn as_utf8(&self) -> u8 {
         match self {
-            PacketType::REGISTER => 0_u8,
-            PacketType::LOGIN => 1_u8,
-            PacketType::PAYMENT => 2_u8,
-            PacketType::VOTE => 3_u8,
-            PacketType::ERROR => 4_u8,
-            PacketType::INFO => 5_u8,
-            PacketType::REQUEST => 6_u8,
-            PacketType::NOMINEES => 7_u8,
-            _ => 10_u8,
+            PacketType::Register => 1_u8,
+            PacketType::Login => 2_u8,
+            PacketType::Payment => 3_u8,
+            PacketType::Vote => 4_u8,
+            PacketType::Error => 5_u8,
+            PacketType::Info => 6_u8,
+            PacketType::RequestNominees => 7_u8,
+            PacketType::RequestBalance => 8_u8,
+            PacketType::RequestResults => 9_u8,
+            PacketType::Nominees => 10_u8,
+            _ => 11_u8
         }
     }
 }

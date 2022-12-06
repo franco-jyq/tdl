@@ -9,9 +9,7 @@ static MAX_EMAIL_SIZE: u8 = 255;
 
 pub struct Register {
     packet_type: PacketType,
-    //username_size: u8,
     pub username: String,
-    //password_size: u8,
     pub password: String,
     email_size: u8,
     pub email: String,
@@ -36,10 +34,8 @@ impl Register {
         }
 
         Ok(Register {
-            packet_type: PacketType::REGISTER,
-            //username_size,
+            packet_type: PacketType::Register,
             username,
-            //password_size,
             password,
             email_size,
             email,
@@ -114,7 +110,7 @@ mod register_tests {
         )
         .unwrap();
         let expected = vec![
-            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
+            1, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
             115, 115,
         ];
         assert_eq!(test_packet.to_bytes(), expected);
@@ -123,7 +119,7 @@ mod register_tests {
     #[test]
     fn register_from_bytes_test() {
         let bytes = vec![
-            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
+            1, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
             115, 115,
         ];
         let pkt = Register::from_bytes(bytes);

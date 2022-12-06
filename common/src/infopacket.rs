@@ -26,7 +26,7 @@ impl InfoPacket {
     }
 
     pub fn is_err(&mut self) -> bool {
-        self.packet_type.as_utf8() == PacketType::ERROR.as_utf8()
+        self.packet_type.as_utf8() == PacketType::Error.as_utf8()
     }
 
     pub fn get_msg(&mut self) -> String {
@@ -52,15 +52,15 @@ mod info_packet_test {
 
     #[test]
     fn info_packet_to_bytes_test() {
-        let test_packet = InfoPacket::new(PacketType::ERROR, "error".to_string());
+        let test_packet = InfoPacket::new(PacketType::Error, "error".to_string());
 
-        let expected = vec![4, 5, 101, 114, 114, 111, 114];
+        let expected = vec![5, 5, 101, 114, 114, 111, 114];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 
     #[test]
     fn info_packet_from_bytes_test() {
-        let bytes = vec![4, 10, 102, 97, 116, 97, 108, 101, 114, 114, 111, 114];
+        let bytes = vec![5, 10, 102, 97, 116, 97, 108, 101, 114, 114, 111, 114];
 
         let pkt = InfoPacket::from_bytes(bytes);
         assert_eq!(pkt.info_msg, "fatalerror".to_string());

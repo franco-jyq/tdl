@@ -12,7 +12,6 @@ use crate::{ballot_box::BallotBox, data_base::DataBase};
 
 static VOTE_COST: u32 = 100;
 
-// Almacenar datos de la conexión
 pub struct Connection {
     stream: TcpStream,
     username: Option<String>,
@@ -34,48 +33,44 @@ impl Connection {
         tx: Sender<Vote>,
         ballot_box: &mut Arc<BallotBox>,
     ) {
+        info!("Conexión {} inicializada",self.number);
         let mut buffer = [0; 1024];
 
         while let Ok(size) = self.stream.read(&mut buffer) {
             if size == 0 {
                 break;
             }
-            let aux = buffer[0];
-            let first_byte = PacketType::from_utf8(aux);
-            match first_byte {
-                PacketType::LOGIN => {
-                    info!("Conexión {} Se recibio un login",self.number);
+            let packet_type = PacketType::from_utf8(buffer[0]);
+            match packet_type {
+                PacketType::Login => {
+                    info!("Conexión {} - Se recibio un login",self.number);
                     self.handler_login(Login::from_bytes(buffer.to_vec()), &data_base)
                 }
-                PacketType::REGISTER => {
-                    info!("Conexión {} Se recibio un register",self.number);
+                PacketType::Register => {
+                    info!("Conexión {} - Se recibio un register",self.number);
                     self.handler_register(Register::from_bytes(buffer.to_vec()), &data_base)
                 }
-                PacketType::PAYMENT => {
-                    info!("Conexión {} Se recibio un payment",self.number);
+                PacketType::Payment => {
+                    info!("Conexión {} - Se recibio un payment",self.number);
                     self.handler_payment(Payment::from_bytes(buffer.to_vec()), &data_base)
                 }
-                PacketType::VOTE => {
-                    info!("Conexión {} Se recibio un vote",self.number);
+                PacketType::Vote => {
+                    info!("Conexión {} - Se recibio un vote",self.number);
                     self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())
                 }
-                PacketType::REQUEST => {
-                    info!("Conexión {} Se recibio un request",self.number);
-                    let mut info_packet = InfoPacket::from_bytes(buffer.to_vec());
-                    let msg = info_packet.get_msg();
-
-                    if msg == "Obtener Nominados" {
-                        info!("Se solicitaron los nominados");
-                        self.handler_request_nominees(ballot_box)
-                    } else if msg == "Obtener Votos" {
-                        info!("Se solicitaron los votos");
-                        self.handler_request_votes(ballot_box)
-                    }else if msg == "Obtener Saldo" {
-                        info!("Saldo solicitado");
-                        self.handler_request_saldo(&data_base)
-                    }
+                PacketType::RequestNominees => {
+                    info!("Conexión {} - Se recibio un request nominees",self.number);
+                    self.handler_request_nominees(ballot_box)
                 }
-                _ => (),
+                PacketType::RequestBalance => {
+                    info!("Conexión {} - Se recibio un request balance",self.number);
+                    self.handler_request_saldo(&data_base)
+                }
+                PacketType::RequestResults => {
+                    info!("Conexión {} - Se recibio un request results",self.number);
+                    self.handler_request_votes(ballot_box)
+                }               
+                _ => (), // Aca habria que cortar la conexion, mandar error
             }
             buffer = [0; 1024];
         }
@@ -122,7 +117,7 @@ impl Connection {
             let amount = VOTE_COST * packet.cantidad_votos as u32;
             if let Err(e) = data_base.can_vote(self.username.as_deref().unwrap(), amount) {
                 self.write_error(&e);
-                println!("No es posible votar");
+                info!("Conexión {} - No fue posible votar para el cliente: {:?}",self.number,self.username);
                 return;
             }
             if tx.send(packet).is_err() {
@@ -145,7 +140,7 @@ impl Connection {
 
         let copy_user = self.username.clone().unwrap();
         let money = data_base.get_money(&copy_user).unwrap();
-        let nom_pkt = InfoPacket::new(PacketType::INFO, money.to_string()).to_bytes();
+        let nom_pkt = InfoPacket::new(PacketType::Info, money.to_string()).to_bytes();
         self.stream.write(&nom_pkt).unwrap();
         info!("Conexión {} - Saldo enviado correctamente al cliente: {:?}",self.number,self.username);
     }
@@ -153,10 +148,10 @@ impl Connection {
     pub fn handler_request_votes(&mut self, ballot_box: &mut Arc<BallotBox>) {
         if self.username.is_some() {
             let votes = ballot_box.get_votes();
-            let nom_pkt = InfoPacket::new(PacketType::INFO, votes).to_bytes();
+            let nom_pkt = InfoPacket::new(PacketType::Info, votes).to_bytes();
 
             self.stream.write(&nom_pkt).unwrap(); // Consultar que hacemos de aca
-            println!("Votos enviados correctamente");
+            info!("Conexión {} - Se registraron votos del cliente: {:?}",self.number,self.username);
             return;
         }
 
@@ -176,12 +171,12 @@ impl Connection {
     }
 
     pub fn write_error(&mut self, error_msg: &str) {
-        let error_pkt = InfoPacket::new(PacketType::ERROR, error_msg.to_string()).to_bytes();
+        let error_pkt = InfoPacket::new(PacketType::Error, error_msg.to_string()).to_bytes();
         self.stream.write(&error_pkt).unwrap(); // Consultar que hacemos aca
     }
 
     pub fn write_info(&mut self, info_msg: &str) {
-        let info_pkt = InfoPacket::new(PacketType::INFO, info_msg.to_string()).to_bytes();
+        let info_pkt = InfoPacket::new(PacketType::Info, info_msg.to_string()).to_bytes();
         self.stream.write(&info_pkt).unwrap(); // Consultar que hacemos aca
     }
 }

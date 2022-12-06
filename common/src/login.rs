@@ -26,7 +26,7 @@ impl Login {
         }
 
         Ok(Login {
-            packet_type: PacketType::LOGIN,
+            packet_type: PacketType::Login,
             username,
             password,
         })
@@ -81,14 +81,14 @@ mod login_tests {
     #[test]
     fn login_to_bytes_test() {
         let test_packet = Login::new("user".to_string(), "pass".to_string()).unwrap();
-        let expected = vec![1, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115];
+        let expected = vec![2, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115];
         assert_eq!(test_packet.to_bytes(), expected);
     }
 
     #[test]
     fn login_from_bytes_test() {
         let bytes = vec![
-            0, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
+            2, 4, 117, 115, 101, 114, 4, 112, 97, 115, 115, 9, 117, 115, 101, 114, 64, 112, 97,
             115, 115,
         ];
         let pkt = Login::from_bytes(bytes);
