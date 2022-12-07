@@ -28,9 +28,9 @@ impl DataBase {
         })
     }
 
-    pub fn log_new_user(&self, username: String, password: String) -> Result<(), String> {
+    pub fn log_new_user(&self, username: &str, password: &str) -> Result<(), String> {
         if let Ok(clients) = &mut self.clients.read() {
-            if let Some(user) = clients.get(&username) {
+            if let Some(user) = clients.get(username) {
                 if user.password == password {
                     return Ok(());
                 }
@@ -71,10 +71,10 @@ impl DataBase {
         Err(String::from("GET MONEY ERR"))
     }
 
-    pub fn update_money(&self, username: String, amount: u32) -> Result<u32, String> {
+    pub fn update_money(&self, username: &str, amount: u32) -> Result<u32, String> {
         let mut updated_balance = amount;
         if let Ok(clients) = &mut self.clients.write() {
-            match clients.get_mut(&username) {
+            match clients.get_mut(username) {
                 Some(user) => {
                     user.balance += amount;
                     updated_balance = user.balance;

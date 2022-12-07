@@ -26,12 +26,12 @@ impl BallotBox {
         })
     }
 
-    pub fn vote_nominee(&self, nominee: String, amount: usize) -> Result<(), String> {
+    pub fn vote_nominee(&self, nominee: &str, amount: usize) -> Result<(), String> {
         if let Ok(nominees) = &mut self.nominees.write() {
-            if nominees.contains_key(&nominee) {
-                if let Some(votes) = nominees.get(&nominee) {
+            if nominees.contains_key(nominee) {
+                if let Some(votes) = nominees.get(nominee) {
                     let new_votes = votes + amount;
-                    nominees.insert(nominee, new_votes);
+                    nominees.insert(nominee.to_string(), new_votes);
                 }
             } else {
                 return Err(String::from("NOT_A_NOMINEE"));

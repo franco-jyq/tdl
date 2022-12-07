@@ -92,7 +92,7 @@ fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> R
         match rx.recv() {
             Ok(vote) => {
                 ballot_box_reference
-                    .vote_nominee(vote.nominado, vote.cantidad_votos.into())
+                    .vote_nominee(vote.get_nominado(), vote.get_cantidad_votos().into())
                     .unwrap();
                 if let Ok(nominees) = ballot_box_reference.nominees.read() {
                     println!("{:?}", nominees);

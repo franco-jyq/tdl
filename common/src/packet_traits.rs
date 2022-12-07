@@ -27,8 +27,7 @@ pub trait PasswordTobytes {
     }
 }
 
-pub trait ToBytesWithPass: UsernameToBytes + PasswordTobytes {    
-
+pub trait ToBytesWithPassAndUser: UsernameToBytes + PasswordTobytes {
     fn to_bytes_login_data(&self) -> Vec<u8> {
         [
             self.pkt_type_and_username_to_bytes(),

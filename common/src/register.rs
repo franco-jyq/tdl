@@ -1,5 +1,5 @@
 use crate::{
-    packet_traits::{ToBytes, ToBytesWithPass, UsernameToBytes, PasswordTobytes},
+    packet_traits::{PasswordTobytes, ToBytes, ToBytesWithPassAndUser, UsernameToBytes},
     packet_type::PacketType,
 };
 
@@ -83,7 +83,7 @@ impl PasswordTobytes for Register {
     }
 }
 
-impl ToBytesWithPass for Register {
+impl ToBytesWithPassAndUser for Register {
     fn to_bytes_with_pass(&self) -> Vec<u8> {
         let email_size_bytes = self.email_size.to_be_bytes().to_vec();
         let email_bytes = self.email.as_bytes().to_vec();

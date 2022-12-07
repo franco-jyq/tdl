@@ -60,7 +60,7 @@ impl Worker {
         let thread = thread::spawn(move || loop {
             match receiver.lock().unwrap().recv() {
                 Ok(job) => {
-                    println!("Worker {id} got a job; executing."); // Dps sacar, estan para debug
+                    //println!("Worker {id} got a job; executing."); 
 
                     job();
                 }

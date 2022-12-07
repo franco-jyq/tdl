@@ -82,14 +82,14 @@ impl Connection {
     }
 
     pub fn handler_login(&mut self, packet: Login, data_base: &Arc<DataBase>) -> Result<(),String> {
-        if let Err(e) = data_base.log_new_user(packet.username.clone(), packet.password) {
+        if let Err(e) = data_base.log_new_user(packet.get_username(), packet.get_password()) {
             return self.write_error(&e)            
         }
         info!(
             "Conexión {} - Se logueo correctamente al cliente: {}",
-            self.number, packet.username
+            self.number, packet.get_username()
         );
-        self.username = Some(packet.username);
+        self.username = Some(packet.get_username().to_string());
 
         self.write_info("Login aceptado")
     }
@@ -109,7 +109,7 @@ impl Connection {
     }
 
     pub fn handler_payment(&mut self, packet: Payment, data_base: &Arc<DataBase>) -> Result<(),String> {
-        match data_base.update_money(packet.username, packet.amount) {
+        match data_base.update_money(packet.get_username(), packet.get_amount()) {
             Err(e) => {
                 return self.write_error(&e)
             }
@@ -126,7 +126,7 @@ impl Connection {
 
     pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) -> Result<(),String> {
         if self.username.is_some() {
-            let amount = VOTE_COST * packet.cantidad_votos as u32;
+            let amount = VOTE_COST * packet.get_cantidad_votos() as u32;
             if let Err(e) = data_base.can_vote(self.username.as_deref().unwrap(), amount) {
                 
                 info!(

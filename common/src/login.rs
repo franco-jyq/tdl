@@ -1,5 +1,5 @@
 use crate::{
-    packet_traits::{ ToBytes, ToBytesWithPass, UsernameToBytes, PasswordTobytes},
+    packet_traits::{PasswordTobytes, ToBytes, ToBytesWithPassAndUser, UsernameToBytes},
     packet_type::PacketType,
 };
 
@@ -8,14 +8,14 @@ static MAX_PASSWORD_SIZE: u8 = 255;
 
 pub struct Login {
     packet_type: PacketType,
-    pub username: String,
-    pub password: String,
+    username: String,
+    password: String,
 }
 
 impl Login {
     pub fn new(username: String, password: String) -> Result<Login, String> {
         let username_size = username.len() as u8;
-        let password_size: u8 = password.len() as u8;
+        let password_size = password.len() as u8;
 
         if username_size > MAX_USERNAME_SIZE {
             return Err(String::from("INVALID_USERNAME_SIZE"));
@@ -63,7 +63,8 @@ impl PasswordTobytes for Login {
     }
 }
 
-impl ToBytesWithPass for Login {}
+impl ToBytesWithPassAndUser for Login {}
+
 impl ToBytes for Login {
     fn to_bytes(&self) -> Vec<u8> {
         self.to_bytes_with_pass()

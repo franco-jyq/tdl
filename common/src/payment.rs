@@ -5,8 +5,8 @@ use crate::{
 
 pub struct Payment {
     packet_type: PacketType,
-    pub username: String,
-    pub amount: u32,
+    username: String,
+    amount: u32,
 }
 
 impl Payment {
@@ -16,6 +16,10 @@ impl Payment {
             username,
             amount,
         }
+    }
+
+    pub fn get_amount(&self) -> u32 {
+        self.amount
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Payment {

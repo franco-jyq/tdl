@@ -6,8 +6,8 @@ static MAX_NOMINADO_SIZE: u8 = 255;
 pub struct Vote {
     packet_type: PacketType,
     nominado_size: u8,
-    pub nominado: String,
-    pub cantidad_votos: u8,
+    nominado: String,
+    cantidad_votos: u8,
 }
 
 impl Vote {
@@ -24,6 +24,14 @@ impl Vote {
             nominado,
             cantidad_votos,
         })
+    }
+
+    pub fn get_cantidad_votos(&self) -> u8 {
+        self.cantidad_votos
+    }
+
+    pub fn get_nominado(&self) -> &str {
+        &self.nominado
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Vote {

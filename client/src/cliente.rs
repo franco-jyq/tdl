@@ -1,6 +1,6 @@
 use common::vote::Vote;
 use common::{
-    colors::{print_common_text, print_cyan, print_error},
+    colors::{print_cyan, print_error},
     infopacket::InfoPacket,
     login::Login,
     nominees::Nominees,
@@ -159,12 +159,8 @@ where
             match first_byte {
                 PacketType::Nominees => {
                     let nominees = Nominees::from_bytes(buffer.to_vec());
-
                     print_cyan("Los Nominados Son:");
-
-                    for n in nominees.nominees.iter() {
-                        print_common_text(common::nominees::get_name(n).as_str());
-                    }
+                    nominees.mostrar_nominados();
                     Ok(())
                 }
                 _ => Ok(()),
@@ -245,20 +241,15 @@ mod cliente_tests {
         let stream = MockTcpStream { write_data: vec![] };
         let mut client = Client { stream: stream };
         let bytes: &[u8] = &Register::new(
-            "Frodo".to_string(),
-            "aguante_milei".to_string(),
-            "frodoneta@gmail.com".to_string(),
+            "Franco".to_string(),
+            "hola123".to_string(),
+            "franco@gmail.com".to_string(),
         )
         .unwrap()
         .to_bytes();
 
         client
-            .escribir_mensaje(vec![
-                "Registrarse",
-                "Frodo",
-                "aguante_milei",
-                "frodoneta@gmail.com",
-            ])
+            .escribir_mensaje(vec!["Registrarse", "Franco", "hola123", "franco@gmail.com"])
             .unwrap();
 
         let mut buf = [0; 500];

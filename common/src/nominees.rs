@@ -1,4 +1,4 @@
-use crate::{packet_traits::ToBytes, packet_type::PacketType};
+use crate::{colors::print_common_text, packet_traits::ToBytes, packet_type::PacketType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Nominee {
@@ -12,13 +12,16 @@ impl Nominee {
         let name_bytes = self.name.as_bytes().to_vec();
         [name_size_bytes, name_bytes].concat()
     }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
-//#[derive(Debug, Clone)]
 pub struct Nominees {
     packet_type: PacketType,
     nominees_size: u32, // Tamaño en bytes del vector de abajo
-    pub nominees: Vec<Nominee>,
+    nominees: Vec<Nominee>,
 }
 
 impl Nominees {
@@ -37,6 +40,12 @@ impl Nominees {
             new_nominees.nominees_size += name.len() as u32 + 1;
         }
         new_nominees
+    }
+
+    pub fn mostrar_nominados(&self) {
+        for n in self.nominees.iter() {
+            print_common_text(n.get_name());
+        }
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Nominees {
@@ -65,10 +74,6 @@ impl ToBytes for Nominees {
         }
         result.concat()
     }
-}
-
-pub fn get_name(nominee: &Nominee) -> String {
-    nominee.name.clone()
 }
 
 #[cfg(test)]
