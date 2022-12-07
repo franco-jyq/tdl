@@ -1,5 +1,5 @@
 use crate::{
-    packet_traits::{GetPassword, ToBytes, ToBytesWithPass, UsernameToBytes},
+    packet_traits::{ToBytes, ToBytesWithPass, UsernameToBytes, PasswordTobytes},
     packet_type::PacketType,
 };
 
@@ -9,10 +9,10 @@ static MAX_EMAIL_SIZE: u8 = 255;
 
 pub struct Register {
     packet_type: PacketType,
-    pub username: String,
-    pub password: String,
+    username: String,
+    password: String,
     email_size: u8,
-    pub email: String,
+    email: String,
 }
 
 impl Register {
@@ -40,6 +40,10 @@ impl Register {
             email_size,
             email,
         })
+    }
+
+    pub fn get_email(&self) -> &str {
+        &self.email
     }
 
     // En este si veo más lógica en un chequeo de error
@@ -73,7 +77,7 @@ impl UsernameToBytes for Register {
     }
 }
 
-impl GetPassword for Register {
+impl PasswordTobytes for Register {
     fn get_password(&self) -> &str {
         &self.password
     }

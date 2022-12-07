@@ -43,12 +43,12 @@ impl DataBase {
 
     pub fn save_new_user(
         &self,
-        username: String,
-        password: String,
-        email: String,
+        username: &str,
+        password: &str,
+        email: &str,
     ) -> Result<(), String> {
         if let Ok(clients) = &mut self.clients.write() {
-            if clients.contains_key(&username) {
+            if clients.contains_key(username) {
                 return Err(String::from("USERNAME_IN_USE"));
             }
             clients.insert(
@@ -56,7 +56,7 @@ impl DataBase {
                 User::new(vec![&username, &password, &email, "0"]),
             );
 
-            println!("DataBase:{:?}", clients);
+            //println!("DataBase:{:?}", clients);
         }
 
         update_data_base(&self.clients);

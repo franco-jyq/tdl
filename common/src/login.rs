@@ -1,5 +1,5 @@
 use crate::{
-    packet_traits::{GetPassword, ToBytes, ToBytesWithPass, UsernameToBytes},
+    packet_traits::{ ToBytes, ToBytesWithPass, UsernameToBytes, PasswordTobytes},
     packet_type::PacketType,
 };
 
@@ -57,7 +57,7 @@ impl UsernameToBytes for Login {
     }
 }
 
-impl GetPassword for Login {
+impl PasswordTobytes for Login {
     fn get_password(&self) -> &str {
         &self.password
     }

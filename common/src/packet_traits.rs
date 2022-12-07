@@ -1,8 +1,9 @@
 use crate::packet_type::PacketType;
 
 pub trait UsernameToBytes {
-    fn get_username(&self) -> &str;
     fn get_packet_type(&self) -> PacketType;
+
+    fn get_username(&self) -> &str;
 
     fn pkt_type_and_username_to_bytes(&self) -> Vec<u8> {
         let packet_type_bytes = self.get_packet_type().as_utf8().to_be_bytes().to_vec();
@@ -14,11 +15,9 @@ pub trait UsernameToBytes {
     }
 }
 
-pub trait GetPassword {
+pub trait PasswordTobytes {
     fn get_password(&self) -> &str;
-}
 
-pub trait ToBytesWithPass: UsernameToBytes + GetPassword {
     fn password_to_bytes(&self) -> Vec<u8> {
         let password = self.get_password();
         let password_size: u8 = password.len() as u8;
@@ -26,6 +25,9 @@ pub trait ToBytesWithPass: UsernameToBytes + GetPassword {
         let password_bytes = password.as_bytes().to_vec();
         [password_size_bytes, password_bytes].concat()
     }
+}
+
+pub trait ToBytesWithPass: UsernameToBytes + PasswordTobytes {    
 
     fn to_bytes_login_data(&self) -> Vec<u8> {
         [

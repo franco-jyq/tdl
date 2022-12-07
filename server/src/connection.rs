@@ -5,7 +5,7 @@ use std::{
 };
 
 use common::{
-    infopacket::InfoPacket, login::Login, nominees::Nominees, packet_traits::ToBytes,
+    infopacket::InfoPacket, login::Login, nominees::Nominees, packet_traits::{ToBytes, UsernameToBytes, PasswordTobytes},
     packet_type::PacketType, payment::Payment, register::Register, vote::Vote,
 };
 
@@ -96,15 +96,15 @@ impl Connection {
 
     pub fn handler_register(&mut self, packet: Register, data_base: &Arc<DataBase>) -> Result<(),String> {
         if let Err(e) =
-            data_base.save_new_user(packet.username.clone(), packet.password, packet.email)
+            data_base.save_new_user(packet.get_username(), packet.get_password(), packet.get_email())
         {
             return self.write_error(&e)            
         }
         info!(
             "Conexión {} - Se registro correctamente al cliente: {}",
-            self.number, packet.username
+            self.number, packet.get_username()
         );
-        self.username = Some(packet.username);
+        self.username = Some(packet.get_username().to_string());
         self.write_info("Register aceptado")
     }
 
