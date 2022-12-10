@@ -87,7 +87,7 @@ fn load_nominees(nominees: &mut HashMap<String, usize>, reader: BufReader<File>)
                 nominees.entry(nominee).or_insert(votes);
             }
         } else {
-            println!("Hubo un error con la linea del archivo para la base de datos",);
+            info!("Hubo un error con la linea del archivo para la base de datos",);
         }
     }
 }
@@ -97,7 +97,6 @@ fn update_data_base(nominees: &RwLock<HashMap<String, usize>>) {
         if let Ok(nominees) = nominees.read() {
             let nominees_clone = nominees.clone();
             for (nominee, vote) in nominees_clone.into_iter() {
-                println!("Vote to be updated: {:?}", vote);
                 let vector: Vec<String> = vec![nominee, vote.to_string()];
                 let comma: String = String::from(",");
                 for atribute in vector.iter() {

@@ -109,19 +109,20 @@ impl Connection {
     }
 
     pub fn handler_payment(&mut self, packet: Payment, data_base: &Arc<DataBase>) -> Result<(),String> {
-        match data_base.update_money(packet.get_username(), packet.get_amount()) {
+        match data_base.update_user_balance(packet.get_username(), packet.get_amount(),|x,y| x + y) {
             Err(e) => {
                 return self.write_error(&e)
             }
             Ok(saldo) => {
                 info!(
                     "Conexión {} - Se recargo correctamente saldo al cliente: {:?}",
-                    self.number, self.username
+                    self.number, self.username.clone().unwrap()
                 );
                 let saldo_s = saldo.to_string();
                 return self.write_info(&saldo_s)
             }
         }
+        
     }
 
     pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>,ballot_box: &mut Arc<BallotBox>) -> Result<(),String> {
@@ -131,7 +132,7 @@ impl Connection {
                 
                 info!(
                     "Conexión {} - No fue posible votar para el cliente: {:?}",
-                    self.number, self.username
+                    self.number, self.username.clone().unwrap()
                 );
                 return self.write_error(&e)
             }
@@ -139,16 +140,15 @@ impl Connection {
                 return self.write_error(&(packet.get_nominado().to_string() + " no es un nominado"))           
             }
             if tx.send(packet).is_err() {
-                return self.write_error("SERVER FATAL ERROR")
+                return self.write_error("Error fatal en el servidor")
             }
 
-            if let Err(e) = data_base.update_user_balance(amount, self.username.as_deref().unwrap())
+            if let Err(e) = data_base.update_user_balance( self.username.as_deref().unwrap(),amount,|x, y| x - y)
             {
-                println!("No se pudo actualiza el balance");
                 return self.write_error(&e);
             }
 
-            self.write_info("VOTE ACCEPTED")
+            self.write_info("Voto/s aceptado/s")
         } else {
             self.write_error("Cliente no logueado")
         }        
@@ -160,7 +160,7 @@ impl Connection {
             let money = data_base.get_money(&copy_user).unwrap();            
             info!(
                 "Conexión {} - Saldo enviado correctamente al cliente: {:?}",
-                self.number, self.username
+                self.number, self.username.clone().unwrap()
             );
             self.write_info(&money.to_string())
         } else {
@@ -176,11 +176,11 @@ impl Connection {
             let votes  = ballot_box.get_votes();        
             info!(
                 "Conexión {} - Se registraron votos del cliente: {:?}",
-                self.number, self.username
+                self.number, self.username.clone().unwrap()
             );
             self.write_info(&votes)
         } else {
-            self.write_error("PLEASE LOGIN OR REGISTER")
+            self.write_error("Por favor inicie sesión o registrese")
         }
 
         
@@ -194,12 +194,12 @@ impl Connection {
                 return Err(String::from("Error fatal"));
             }
             info!(
-                "Conexión {} - Votos enviados correctamente al cliente: {:?}",
-                self.number, self.username
+                "Conexión {} - Nominados enviados correctamente al cliente: {:?}",
+                self.number, self.username.clone().unwrap()
             );
             Ok(())
         } else {
-            self.write_error("PLEASE LOGIN OR REGISTER")
+            self.write_error("Por favor inicie sesión o registrese")
         }
 
         

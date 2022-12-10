@@ -34,12 +34,11 @@ impl Server {
 
         let (tx, rx) = mpsc::channel();
         
-        if let Err(e) = launch_main_handler(&mut ballot_box_arc.clone(), rx){
-            println!("{:?}", e);
-        }
+        launch_main_handler(&mut ballot_box_arc.clone(), rx);
+           
 
         self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc);
-        // Pensar resultado
+        
     }
 
     fn obtain_connections(
@@ -82,24 +81,20 @@ fn spawn_connection(
             info!("Conexión {} - Finalizada: {}",nro_connection,e)
         }
         
+    } else {
+        info!("Conexión {} - Finalizada",nro_connection)
     }
-    info!("Conexión {} - Finalizada",nro_connection)
+    
 }
 
-fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) -> Result<(), String> {
+fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) {
     let ballot_box_reference = ballot_box.clone();
     let _join_handler: thread::JoinHandle<_> = thread::spawn(move || loop {
-        match rx.recv() {
-            Ok(vote) => {
-                ballot_box_reference
-                    .vote_nominee(vote.get_nominado(), vote.get_cantidad_votos().into())
-                    .unwrap();
-                if let Ok(nominees) = ballot_box_reference.nominees.read() {
-                    println!("{:?}", nominees);
-                };
-            }
-            Err(_) => println!("Error "),
+        for vote in  &rx {
+            ballot_box_reference
+            .vote_nominee(vote.get_nominado(), vote.get_cantidad_votos().into())
+            .unwrap();           
         }
     });
-    Ok(())
+    
 }
