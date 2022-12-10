@@ -30,13 +30,13 @@ fn pause() -> Result<String, String> {
 }
 
 fn listar_msg() {
-    print_common_text("iniciar-sesion nombre-usuario contraseña");
-    print_common_text("registrarse nombre-usuario contraseña mail");
+    print_common_text("iniciar-sesion [nombre-usuario] [contraseña]");
+    print_common_text("registrarse [nombre-usuario] [contraseña mail]");
     print_common_text("consultar-nominados");
-    print_common_text("consultar-votos");
+    print_common_text("consultar-resultados");
     print_common_text("consultar-saldo");
-    print_common_text("votar nominado cantidad");
-    print_common_text("cargar-Saldo nombre-usuario monto");
+    print_common_text("votar [nominado] [cantidad]");
+    print_common_text("cargar-Saldo [nombre-usuario] [monto]");
     print_common_text("salir");
 }
 
@@ -78,7 +78,7 @@ fn inicializar_cliente(stream: TcpStream) {
                                     break;
                                 }
                             }
-                        } else if command == *"consultar-votos" {
+                        } else if command == *"consultar-resultados" {
                             match cliente.imprimir_votados() {
                                 Ok(_) => continue,
                                 Err(e) => {

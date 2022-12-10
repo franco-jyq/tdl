@@ -33,7 +33,7 @@ where
             "iniciar-sesion" => self.iniciar_sesion(vec_msg),
             "registrarse" => self.registrarse(vec_msg),
             "votar" => self.votar(vec_msg),
-            "consultar-votos" => self.consultar_votos(),
+            "consultar-resultados" => self.consultar_resultados(),
             "consultar-nominados" => self.consultar_nominados(),
             "cargar-saldo" => self.cargar_saldo(vec_msg),
             "consultar-saldo" => self.consultar_saldo(),
@@ -90,13 +90,21 @@ where
         }
 
         let nominado = args.remove(0);
-        let cantidad_votos = u8::from_str(args.remove(0)).unwrap();
-        println!("{}", cantidad_votos);
-        if let Ok(vote_packet) = Vote::new(nominado.to_string(), cantidad_votos) {
-            self.enviar_mensaje(vote_packet)
-        } else {
-            Err("Error al crear el paquete de Register".to_string())
+        match  u8::from_str(args.remove(0)) {
+            Ok(cantidad_votos) => {
+                if let Ok(vote_packet) = Vote::new(nominado.to_string(), cantidad_votos) {
+                    self.enviar_mensaje(vote_packet)
+                } else {
+                    Err("Error al crear el paquete de Register".to_string())
+                }
+            }
+            Err(_) => {
+                print_error("Los votos deben ser un numero");
+                return Ok(false);   
+            }
         }
+        
+        
     }
 
     fn consultar_nominados(&mut self) -> Result<bool, String> {
@@ -105,7 +113,7 @@ where
         self.enviar_mensaje(info_packet)
     }
 
-    fn consultar_votos(&mut self) -> Result<bool, String> {
+    fn consultar_resultados(&mut self) -> Result<bool, String> {
         let info_packet = InfoPacket::new(PacketType::RequestResults, "Obtener Votos".to_string());
         self.enviar_mensaje(info_packet)
     }
@@ -122,10 +130,18 @@ where
         }
 
         let username = args.remove(0);
-        let monto = args.remove(0);
+        match FromStr::from_str(args.remove(0)){
+            Ok(monto) => {
+                let payment = Payment::new(username.to_string(), monto);
+                self.enviar_mensaje(payment)
+            }
+            Err(_) => {
+                print_error("El monto debe ser un numero");
+                return Ok(false); 
+            }
+        }
 
-        let payment = Payment::new(username.to_string(), FromStr::from_str(monto).unwrap());
-        self.enviar_mensaje(payment)
+        
     }
 
     pub fn escuchar_respuesta(&mut self) -> Result<(), String> {
@@ -179,9 +195,9 @@ where
                 PacketType::Info => {
                     let mut votados = InfoPacket::from_bytes(buffer.to_vec());
 
-                    print_cyan("Los Votos Son:");
+                    print_cyan("Los Resultados Son:");
                     for v in votados.get_msg().split(';') {
-                        println!("{}", v);
+                        println!("{} ", v);
                     }
 
                     Ok(())
