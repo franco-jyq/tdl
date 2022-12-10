@@ -42,6 +42,10 @@ impl BallotBox {
         Ok(())
     }
 
+    pub fn is_a_nominee(&self,nominee: &str) -> bool {
+        self.nominees.read().unwrap().contains_key(nominee)
+    }
+
     pub fn get_votes(&self) -> String {
         let mut nominee_votes: Vec<(String, usize)> = vec![];
 

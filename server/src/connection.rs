@@ -57,7 +57,7 @@ impl Connection {
                 }
                 PacketType::Vote => {
                     info!("Conexión {} - Se recibio un vote", self.number);
-                    self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone())?
+                    self.handler_vote(Vote::from_bytes(buffer.to_vec()), &data_base, tx.clone(),ballot_box)?
                 }
                 PacketType::RequestNominees => {
                     info!("Conexión {} - Se recibio un request nominees", self.number);
@@ -124,7 +124,7 @@ impl Connection {
         }
     }
 
-    pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>) -> Result<(),String> {
+    pub fn handler_vote(&mut self, packet: Vote, data_base: &Arc<DataBase>, tx: Sender<Vote>,ballot_box: &mut Arc<BallotBox>) -> Result<(),String> {
         if self.username.is_some() {
             let amount = VOTE_COST * packet.get_cantidad_votos() as u32;
             if let Err(e) = data_base.can_vote(self.username.as_deref().unwrap(), amount) {
@@ -134,6 +134,9 @@ impl Connection {
                     self.number, self.username
                 );
                 return self.write_error(&e)
+            }
+            if !ballot_box.is_a_nominee(packet.get_nominado())  {
+                return self.write_error(&(packet.get_nominado().to_string() + " no es un nominado"))           
             }
             if tx.send(packet).is_err() {
                 return self.write_error("SERVER FATAL ERROR")
