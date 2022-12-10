@@ -1,25 +1,31 @@
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread,
+};
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: Option<Sender<Job>>,
+    sender: Option<mpsc::Sender<Job>>,
 }
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
+
 // Source: Rust book Chapter 20.2/20.3 (No es código nuestro)
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
-        // Chequear que threads > 0
-        let (sender, receiver) = channel();
-        let mut workers = Vec::with_capacity(size);
+        assert!(size > 0);
+
+        let (sender, receiver) = mpsc::channel();
 
         let receiver = Arc::new(Mutex::new(receiver));
+
+        let mut workers = Vec::with_capacity(size);
+
         for id in 0..size {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
+
         ThreadPool {
             workers,
             sender: Some(sender),
@@ -28,10 +34,10 @@ impl ThreadPool {
 
     pub fn execute<F>(&self, f: F)
     where
-        F: FnOnce(),       // Takes ownership of values in its enviroment (Explicar estos traits)
-        F: Send + 'static, // Transfer closure from one thread to another
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
+
         self.sender.as_ref().unwrap().send(job).unwrap();
     }
 }
@@ -56,11 +62,13 @@ struct Worker {
 }
 
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let thread = thread::spawn(move || loop {
-            match receiver.lock().unwrap().recv() {
+            let message = receiver.lock().unwrap().recv();
+
+            match message {
                 Ok(job) => {
-                    //println!("Worker {id} got a job; executing."); 
+                    println!("Worker {id} got a job; executing.");
 
                     job();
                 }
