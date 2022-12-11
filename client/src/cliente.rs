@@ -90,7 +90,7 @@ where
         }
 
         let nominado = args.remove(0);
-        match  u8::from_str(args.remove(0)) {
+        match u8::from_str(args.remove(0)) {
             Ok(cantidad_votos) => {
                 if let Ok(vote_packet) = Vote::new(nominado.to_string(), cantidad_votos) {
                     self.enviar_mensaje(vote_packet)
@@ -100,11 +100,9 @@ where
             }
             Err(_) => {
                 print_error("Los votos deben ser un numero");
-                return Ok(false);   
+                Ok(false)
             }
         }
-        
-        
     }
 
     fn consultar_nominados(&mut self) -> Result<bool, String> {
@@ -130,18 +128,16 @@ where
         }
 
         let username = args.remove(0);
-        match FromStr::from_str(args.remove(0)){
+        match FromStr::from_str(args.remove(0)) {
             Ok(monto) => {
                 let payment = Payment::new(username.to_string(), monto);
                 self.enviar_mensaje(payment)
             }
             Err(_) => {
                 print_error("El monto debe ser un numero");
-                return Ok(false); 
+                Ok(false)
             }
         }
-
-        
     }
 
     pub fn escuchar_respuesta(&mut self) -> Result<(), String> {
@@ -153,11 +149,7 @@ where
                 PacketType::Info | PacketType::Error => {
                     let mut packet = InfoPacket::from_bytes(buffer.to_vec());
 
-                    //if packet.is_err(){
-                    //    return Err(packet.get_msg());
-                    //}
                     println!("{}", packet.get_msg());
-                    //aca según lo que retorna el servidor se puede ver si hay que imprimirlo o no por ejemplo
                     Ok(())
                 }
                 _ => Ok(()),

@@ -16,7 +16,6 @@ fn main() {
     }
 }
 
-//Lee el input para obtener el tipo de mensaje a enviar.
 fn pause() -> Result<String, String> {
     let mut msg = String::new();
 
@@ -49,9 +48,11 @@ fn inicializar_cliente(stream: TcpStream) {
     let mut contador = 0;
     loop {
         if let Ok(msg) = pause() {
-            //Parseo en un vector la linea leida
             let vec_msg: Vec<&str> = msg.split_whitespace().collect();
-
+            if vec_msg.is_empty() {
+                print_error("Introduzca algun comando");
+                continue;
+            }
             let command = vec_msg.first().unwrap().to_lowercase();
             if command == *"ayuda" {
                 listar_msg();
@@ -71,29 +72,23 @@ fn inicializar_cliente(stream: TcpStream) {
                 Ok(hay_respuesta) => {
                     if hay_respuesta {
                         if command == *"consultar-nominados" {
-                            match cliente.imprimir_nominados() {
-                                Ok(_) => continue,
-                                Err(e) => {
-                                    println!("{e}");
-                                    break;
-                                }
-                            }
-                        } else if command == *"consultar-resultados" {
-                            match cliente.imprimir_votados() {
-                                Ok(_) => continue,
-                                Err(e) => {
-                                    println!("{e}");
-                                    break;
-                                }
-                            }
-                        }
-                        match cliente.escuchar_respuesta() {
-                            Ok(_) => continue,
-                            Err(e) => {
+                            if let Err(e) = cliente.imprimir_nominados() {
                                 println!("{e}");
                                 break;
                             }
+                            continue;
+                        } else if command == *"consultar-resultados" {
+                            if let Err(e) = cliente.imprimir_votados() {
+                                println!("{e}");
+                                break;
+                            }
+                            continue;
                         }
+                        if let Err(e) = cliente.escuchar_respuesta() {
+                            println!("{e}");
+                            break;
+                        }
+                        continue;
                     }
                 }
                 Err(e) => {
