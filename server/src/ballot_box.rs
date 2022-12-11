@@ -42,28 +42,20 @@ impl BallotBox {
         Ok(())
     }
 
-    pub fn is_a_nominee(&self,nominee: &str) -> bool {
+    pub fn is_a_nominee(&self, nominee: &str) -> bool {
         self.nominees.read().unwrap().contains_key(nominee)
     }
 
     pub fn get_votes(&self) -> String {
-        let mut nominee_votes: Vec<(String, usize)> = vec![];
-
-        if let Ok(nominees) = self.nominees.read() {
-            let nominees_clone = nominees.clone();
-            for (nominee, _) in nominees_clone.into_iter() {
-                if let Some(votes) = nominees.get(&nominee) {
-                    nominee_votes.push((nominee, *votes));
-                } else {
-                    continue;
-                }
-            }
-        }
-        let mut votes = String::new();
-        for v in nominee_votes {
-            votes = votes + &v.0 + "," + &v.1.to_string() + ";";
-        }
-        votes
+        let nominees = self.nominees.read().unwrap();
+        let total_iter: usize = nominees.iter().map(|x| x.1).sum();
+        let nominee_votes: String = nominees
+            .iter()
+            .map(|x| (x.0.clone(), (*x.1 as f32) / total_iter as f32 * 100_f32))
+            .map(|x| x.0 + "," + "%" + &x.1.to_string() + ";")
+            .reduce(|x, y| x + &y)
+            .unwrap();
+        nominee_votes
     }
 
     pub fn get_nominees(&self) -> Vec<String> {

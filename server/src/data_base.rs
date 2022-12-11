@@ -41,24 +41,17 @@ impl DataBase {
         Err(String::from("Error fatal en el servidor"))
     }
 
-    pub fn save_new_user(
-        &self,
-        username: &str,
-        password: &str,
-        email: &str,
-    ) -> Result<(), String> {
+    pub fn save_new_user(&self, username: &str, password: &str, email: &str) -> Result<(), String> {
         if let Ok(clients) = &mut self.clients.write() {
             if clients.contains_key(username) {
                 return Err(String::from("Username ya en uso"));
             }
             clients.insert(
                 username.to_string(),
-                User::new(vec![&username, &password, &email, "0"]),
+                User::new(vec![username, password, email, "0"]),
             );
-
-            
         } else {
-            return Err(String::from("Error fatal en el servidor"));            
+            return Err(String::from("Error fatal en el servidor"));
         }
 
         update_data_base(&self.clients);
@@ -73,13 +66,17 @@ impl DataBase {
         Err(String::from("Error fatal en el servidor"))
     }
 
-    pub fn update_user_balance(&self, username: &str, amount: u32,f: fn(u32,u32) -> u32) -> Result<u32, String> {
-        
+    pub fn update_user_balance(
+        &self,
+        username: &str,
+        amount: u32,
+        f: fn(u32, u32) -> u32,
+    ) -> Result<u32, String> {
         let mut updated_balance = amount;
         if let Ok(clients) = &mut self.clients.write() {
             match clients.get_mut(username) {
                 Some(user) => {
-                    user.balance = f(user.balance,amount);
+                    user.balance = f(user.balance, amount);
                     updated_balance = user.balance;
                 }
                 None => return Err(String::from("USER NOT LOGGED")),
@@ -87,9 +84,6 @@ impl DataBase {
         }
         update_data_base(&self.clients);
         Ok(updated_balance)
-        
-        
-        
     }
 
     pub fn can_vote(&self, username: &str, amount: u32) -> Result<u32, String> {
@@ -104,7 +98,6 @@ impl DataBase {
 
         Err(String::from("SERVER FATAL ERROR"))
     }
-    
 }
 
 fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
@@ -112,7 +105,7 @@ fn load_users(clients: &mut HashMap<String, User>, reader: BufReader<File>) {
         if let Ok(linea) = line {
             let vector_split = linea.split(',').collect::<Vec<&str>>();
             let username = vector_split[0].to_string();
-            let user = User::new(vector_split); 
+            let user = User::new(vector_split);
             clients.entry(username).or_insert(user);
         } else {
             info!("Hubo un error con la linea del archivo para la base de datos",);

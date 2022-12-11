@@ -26,19 +26,16 @@ impl Server {
     pub fn start_server(&mut self) {
         let data_base = DataBase::new("./src/data_file").unwrap();
 
-        
         let data_base_arc = Arc::new(data_base);
 
         let ballot_box = BallotBox::load_ballot("./src/ballot_data_base".to_string()).unwrap();
         let mut ballot_box_arc = Arc::new(ballot_box);
 
         let (tx, rx) = mpsc::channel();
-        
+
         launch_main_handler(&mut ballot_box_arc.clone(), rx);
-           
 
         self.obtain_connections(data_base_arc, tx, &mut ballot_box_arc);
-        
     }
 
     fn obtain_connections(
@@ -63,7 +60,6 @@ impl Server {
                     nro_connection.try_into().unwrap(),
                 );
             });
-            
         }
     }
 }
@@ -77,24 +73,21 @@ fn spawn_connection(
 ) {
     if let Ok(client_m) = client.try_clone() {
         let mut connection = Connection::new(client_m, nro_connection);
-        if let Err(e) = connection.start(data_base, tx, ballot_box){
-            info!("Conexión {} - Finalizada: {}",nro_connection,e)
+        if let Err(e) = connection.start(data_base, tx, ballot_box) {
+            info!("Conexión {} - Finalizada: {}", nro_connection, e)
         }
-        
     } else {
-        info!("Conexión {} - Finalizada",nro_connection)
+        info!("Conexión {} - Finalizada", nro_connection)
     }
-    
 }
 
 fn launch_main_handler(ballot_box: &mut Arc<BallotBox>, rx: Receiver<Vote>) {
     let ballot_box_reference = ballot_box.clone();
     let _join_handler: thread::JoinHandle<_> = thread::spawn(move || loop {
-        for vote in  &rx {
+        for vote in &rx {
             ballot_box_reference
-            .vote_nominee(vote.get_nominado(), vote.get_cantidad_votos().into())
-            .unwrap();           
+                .vote_nominee(vote.get_nominado(), vote.get_cantidad_votos().into())
+                .unwrap();
         }
     });
-    
 }

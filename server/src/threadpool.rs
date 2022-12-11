@@ -10,7 +10,6 @@ pub struct ThreadPool {
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
-
 // Source: Rust book Chapter 20.2/20.3 (No es código nuestro)
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
