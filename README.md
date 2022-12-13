@@ -27,4 +27,15 @@ Para ejecutar el cliente, posicionarse en tdl/cliente y ejecutar el siguiente co
 cargo run
 ```
 
+El cliente puede mandar los siguientes comandos al servidor
 
+```
+iniciar-sesion [nombre-usuario] [contraseña]
+registrarse [nombre-usuario] [contraseña mail]
+consultar-nominados
+consultar-resultados
+consultar-saldo
+votar [nominado] [cantidad]
+cargar-saldo [nombre-usuario] [monto]
+salir
+```
